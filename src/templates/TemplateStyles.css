@@ -1,0 +1,1182 @@
+/* ==========================================================================
+   OpenResumeCraft — Shared Template Styles
+   All resume templates share a common paper appearance with template-specific
+   overrides prefixed by the template name (.classic-, .modern-, .minimal-, .ats-).
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. PAPER CONTAINER — mimics a real sheet of paper
+   -------------------------------------------------------------------------- */
+
+.resume-paper {
+  max-width: 816px; /* ~8.5in at 96dpi */
+  min-height: 1056px; /* ~11in at 96dpi */
+  background: #ffffff;
+  color: #1a1a1a;
+  margin: 0 auto;
+  padding: 34px 44px; /* More compact A4/Letter padding for strict one-page limit */
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+  border-radius: 4px;
+  position: relative;
+  box-sizing: border-box;
+  line-height: 1.45;
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* --------------------------------------------------------------------------
+   2. PRINT STYLES
+   -------------------------------------------------------------------------- */
+
+@media print {
+  body {
+    margin: 0;
+    padding: 0;
+    background: #fff;
+  }
+
+  .resume-paper {
+    box-shadow: none;
+    border-radius: 0;
+    margin: 0;
+    padding: 48px 54px;
+    max-width: 100%;
+    min-height: auto;
+  }
+
+  /* Avoid page breaks inside critical elements */
+  .resume-entry,
+  .resume-education-entry,
+  .resume-project-entry,
+  .classic-entry,
+  .classic-education-entry,
+  .classic-project-entry,
+  .classic-certification-entry,
+  .modern-entry,
+  .modern-education-entry,
+  .modern-project-entry,
+  .minimal-entry,
+  .minimal-education-entry,
+  .minimal-project-entry,
+  .ats-entry,
+  .ats-education-entry,
+  .ats-project-entry {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Remove backgrounds that waste ink (except Modern sidebar) */
+  .classic-resume .resume-paper,
+  .minimal-resume .resume-paper,
+  .ats-resume .resume-paper {
+    background: #fff !important;
+  }
+
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   3. COMMON TYPOGRAPHY
+   -------------------------------------------------------------------------- */
+
+.resume-paper h1,
+.resume-paper h2,
+.resume-paper h3,
+.resume-paper h4 {
+  margin: 0;
+  padding: 0;
+  line-height: 1.25;
+}
+
+.resume-paper ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.resume-paper a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.resume-paper p {
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   4. COMMON ENTRY FORMATTING
+   -------------------------------------------------------------------------- */
+
+.resume-entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.resume-entry-header-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.resume-entry-dates {
+  color: #555;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.resume-entry-bullets {
+  padding-left: 18px;
+  list-style: disc;
+  margin-top: 4px;
+}
+
+.resume-entry-bullets li {
+  margin-bottom: 3px;
+  list-style: disc;
+  line-height: 1.45;
+}
+
+.resume-entry-bullets li::marker {
+  color: #888;
+  font-size: 10px;
+}
+
+/* ==========================================================================
+   5. CLASSIC TEMPLATE STYLES
+   Uses Georgia/serif for a traditional, timeless look.
+   ========================================================================== */
+
+.classic-resume .resume-paper {
+  font-family: 'Georgia', 'Times New Roman', 'Cambria', serif;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Header / Name */
+.classic-header {
+  text-align: center;
+  margin-bottom: 16px;
+  border-bottom: 2px solid #1a1a1a;
+  padding-bottom: 14px;
+}
+
+.classic-name {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #111;
+  margin-bottom: 4px;
+}
+
+.classic-title {
+  font-size: 14px;
+  font-weight: 400;
+  color: #444;
+  font-style: italic;
+  margin-bottom: 8px;
+}
+
+.classic-contact {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 12px;
+  color: #333;
+}
+
+.classic-contact-item {
+  white-space: nowrap;
+}
+
+.classic-contact-separator {
+  color: #aaa;
+  user-select: none;
+}
+
+/* Sections */
+.classic-section {
+  margin-top: 11px;
+}
+
+.classic-section-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: #111;
+  border-bottom: 1px solid #333;
+  padding-bottom: 2px;
+  margin-bottom: 6px;
+}
+
+/* Summary */
+.classic-summary-text {
+  font-size: 13px;
+  line-height: 1.55;
+  color: #222;
+}
+
+/* Experience */
+.classic-entry {
+  margin-bottom: 8px;
+}
+
+.classic-entry:last-child {
+  margin-bottom: 0;
+}
+
+.classic-entry-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111;
+}
+
+.classic-entry-company {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+}
+
+.classic-entry-location {
+  font-size: 12px;
+  color: #555;
+  font-style: italic;
+}
+
+.classic-entry-dates {
+  font-size: 12px;
+  color: #555;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.classic-entry-description {
+  font-size: 12.5px;
+  color: #333;
+  margin-top: 3px;
+  line-height: 1.5;
+}
+
+.classic-bullets {
+  padding-left: 18px;
+  margin-top: 5px;
+}
+
+.classic-bullets li {
+  list-style: disc;
+  margin-bottom: 3px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #222;
+}
+
+/* Skills */
+.classic-skills-category {
+  margin-bottom: 6px;
+}
+
+.classic-skills-category-name {
+  font-weight: 700;
+  color: #111;
+  font-size: 13px;
+}
+
+.classic-skills-list {
+  font-size: 12.5px;
+  color: #333;
+}
+
+/* Education */
+.classic-education-entry {
+  margin-bottom: 10px;
+}
+
+.classic-education-entry:last-child {
+  margin-bottom: 0;
+}
+
+.classic-education-degree {
+  font-weight: 700;
+  font-size: 13.5px;
+  color: #111;
+}
+
+.classic-education-institution {
+  font-size: 13px;
+  color: #333;
+}
+
+.classic-education-details {
+  font-size: 12px;
+  color: #555;
+  margin-top: 2px;
+}
+
+/* Projects */
+.classic-project-entry {
+  margin-bottom: 10px;
+}
+
+.classic-project-entry:last-child {
+  margin-bottom: 0;
+}
+
+.classic-project-name {
+  font-weight: 700;
+  font-size: 13.5px;
+  color: #111;
+}
+
+.classic-project-technologies {
+  font-size: 12px;
+  color: #555;
+  font-style: italic;
+  margin-top: 2px;
+}
+
+.classic-project-description {
+  font-size: 12.5px;
+  color: #333;
+  margin-top: 3px;
+  line-height: 1.5;
+}
+
+/* Certifications */
+.classic-certification-entry {
+  margin-bottom: 6px;
+}
+
+.classic-certification-name {
+  font-weight: 700;
+  font-size: 13px;
+  color: #111;
+}
+
+.classic-certification-issuer {
+  font-size: 12.5px;
+  color: #333;
+}
+
+.classic-certification-date {
+  font-size: 12px;
+  color: #555;
+}
+
+/* Languages */
+.classic-language-entry {
+  display: inline;
+  font-size: 13px;
+}
+
+.classic-language-name {
+  font-weight: 600;
+  color: #111;
+}
+
+.classic-language-proficiency {
+  color: #555;
+  font-style: italic;
+}
+
+/* ==========================================================================
+   6. MODERN TEMPLATE STYLES
+   Two-column layout with a dark sidebar and accent-colored headers.
+   ========================================================================== */
+
+.modern-resume .resume-paper {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+  padding: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.modern-sidebar {
+  width: 30%;
+  min-width: 210px;
+  background: #1a1a2e;
+  color: #e0e0ec;
+  padding: 24px 18px 24px 22px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modern-sidebar-name {
+  font-size: 22px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+
+.modern-sidebar-title {
+  font-size: 12px;
+  color: #a8a8c8;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.modern-sidebar-section {
+  margin-top: 4px;
+}
+
+.modern-sidebar-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #7c3aed;
+  margin-bottom: 10px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(124, 58, 237, 0.3);
+}
+
+/* Contact info in sidebar */
+.modern-contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.modern-contact-item {
+  font-size: 11.5px;
+  color: #c8c8e0;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+.modern-contact-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #8888aa;
+  display: block;
+  margin-bottom: 1px;
+}
+
+/* Skills in sidebar */
+.modern-skill-category {
+  margin-bottom: 10px;
+}
+
+.modern-skill-category:last-child {
+  margin-bottom: 0;
+}
+
+.modern-skill-category-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #d4d4e8;
+  margin-bottom: 4px;
+}
+
+.modern-skill-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.modern-skill-tag {
+  font-size: 10.5px;
+  background: rgba(124, 58, 237, 0.15);
+  color: #c4b5fd;
+  padding: 2px 8px;
+  border-radius: 3px;
+  border: 1px solid rgba(124, 58, 237, 0.2);
+}
+
+/* Certifications in sidebar */
+.modern-cert-entry {
+  margin-bottom: 8px;
+}
+
+.modern-cert-entry:last-child {
+  margin-bottom: 0;
+}
+
+.modern-cert-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #e0e0ec;
+}
+
+.modern-cert-issuer {
+  font-size: 11px;
+  color: #a0a0b8;
+}
+
+.modern-cert-date {
+  font-size: 10.5px;
+  color: #8888aa;
+}
+
+/* Languages in sidebar */
+.modern-language-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+  font-size: 12px;
+}
+
+.modern-language-name {
+  font-weight: 600;
+  color: #e0e0ec;
+}
+
+.modern-language-proficiency {
+  font-size: 10.5px;
+  color: #a0a0b8;
+}
+
+/* Main Content */
+.modern-main {
+  width: 70%;
+  padding: 24px 24px 24px 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modern-section {
+  /* nothing extra by default */
+}
+
+.modern-section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a2e;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+  padding-left: 12px;
+  border-left: 3px solid #7c3aed;
+}
+
+/* Summary */
+.modern-summary-text {
+  font-size: 12.5px;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* Experience */
+.modern-entry {
+  margin-bottom: 14px;
+}
+
+.modern-entry:last-child {
+  margin-bottom: 0;
+}
+
+.modern-entry-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.modern-entry-company {
+  font-size: 13px;
+  font-weight: 500;
+  color: #7c3aed;
+}
+
+.modern-entry-meta {
+  font-size: 11.5px;
+  color: #777;
+  margin-top: 1px;
+}
+
+.modern-entry-description {
+  font-size: 12.5px;
+  color: #333;
+  margin-top: 4px;
+  line-height: 1.55;
+}
+
+.modern-bullets {
+  padding-left: 16px;
+  margin-top: 5px;
+}
+
+.modern-bullets li {
+  list-style: disc;
+  margin-bottom: 3px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #333;
+}
+
+.modern-bullets li::marker {
+  color: #7c3aed;
+}
+
+/* Education */
+.modern-education-entry {
+  margin-bottom: 10px;
+}
+
+.modern-education-entry:last-child {
+  margin-bottom: 0;
+}
+
+.modern-education-degree {
+  font-weight: 700;
+  font-size: 13.5px;
+  color: #1a1a2e;
+}
+
+.modern-education-institution {
+  font-size: 13px;
+  color: #7c3aed;
+}
+
+.modern-education-details {
+  font-size: 12px;
+  color: #666;
+  margin-top: 2px;
+}
+
+/* Projects */
+.modern-project-entry {
+  margin-bottom: 10px;
+}
+
+.modern-project-entry:last-child {
+  margin-bottom: 0;
+}
+
+.modern-project-name {
+  font-weight: 700;
+  font-size: 13.5px;
+  color: #1a1a2e;
+}
+
+.modern-project-link {
+  font-size: 11px;
+  color: #7c3aed;
+  margin-left: 6px;
+}
+
+.modern-project-technologies {
+  font-size: 11.5px;
+  color: #777;
+  margin-top: 2px;
+}
+
+.modern-project-description {
+  font-size: 12.5px;
+  color: #333;
+  margin-top: 3px;
+  line-height: 1.5;
+}
+
+.modern-project-bullets {
+  padding-left: 16px;
+  margin-top: 4px;
+}
+
+.modern-project-bullets li {
+  list-style: disc;
+  margin-bottom: 3px;
+  font-size: 12.5px;
+  color: #333;
+  line-height: 1.5;
+}
+
+.modern-project-bullets li::marker {
+  color: #7c3aed;
+}
+
+/* ==========================================================================
+   7. MINIMAL TEMPLATE STYLES
+   Ultra-clean, whitespace-focused. Almost no decoration.
+   ========================================================================== */
+
+.minimal-resume .resume-paper {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+  padding: 60px 64px;
+}
+
+/* Header */
+.minimal-header {
+  margin-bottom: 24px;
+}
+
+.minimal-name {
+  font-size: 32px;
+  font-weight: 300;
+  color: #111;
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+
+.minimal-title {
+  font-size: 14px;
+  font-weight: 400;
+  color: #777;
+  margin-bottom: 8px;
+}
+
+.minimal-contact {
+  font-size: 12px;
+  color: #666;
+  line-height: 1.5;
+}
+
+.minimal-contact-item:not(:last-child)::after {
+  content: ', ';
+  color: #aaa;
+}
+
+/* Sections */
+.minimal-section {
+  margin-top: 12px;
+}
+
+.minimal-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 10px;
+  letter-spacing: 0.3px;
+}
+
+/* Summary */
+.minimal-summary-text {
+  font-size: 13px;
+  color: #444;
+  line-height: 1.7;
+}
+
+/* Experience */
+.minimal-entry {
+  margin-bottom: 18px;
+}
+
+.minimal-entry:last-child {
+  margin-bottom: 0;
+}
+
+.minimal-entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.minimal-entry-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+}
+
+.minimal-entry-company {
+  font-size: 13px;
+  font-weight: 400;
+  color: #555;
+}
+
+.minimal-entry-dates {
+  font-size: 12px;
+  color: #888;
+  white-space: nowrap;
+}
+
+.minimal-entry-location {
+  font-size: 12px;
+  color: #888;
+}
+
+.minimal-entry-description {
+  font-size: 12.5px;
+  color: #444;
+  margin-top: 4px;
+  line-height: 1.65;
+}
+
+.minimal-bullets {
+  padding-left: 16px;
+  margin-top: 5px;
+}
+
+.minimal-bullets li {
+  list-style: disc;
+  margin-bottom: 4px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: #444;
+}
+
+.minimal-bullets li::marker {
+  color: #ccc;
+  font-size: 8px;
+}
+
+/* Skills */
+.minimal-skills-category {
+  margin-bottom: 6px;
+}
+
+.minimal-skills-category-name {
+  font-weight: 600;
+  font-size: 13px;
+  color: #222;
+}
+
+.minimal-skills-list {
+  font-size: 12.5px;
+  color: #555;
+}
+
+/* Education */
+.minimal-education-entry {
+  margin-bottom: 12px;
+}
+
+.minimal-education-entry:last-child {
+  margin-bottom: 0;
+}
+
+.minimal-education-degree {
+  font-weight: 600;
+  font-size: 14px;
+  color: #111;
+}
+
+.minimal-education-institution {
+  font-size: 13px;
+  color: #555;
+}
+
+.minimal-education-details {
+  font-size: 12px;
+  color: #888;
+  margin-top: 2px;
+}
+
+/* Projects */
+.minimal-project-entry {
+  margin-bottom: 12px;
+}
+
+.minimal-project-entry:last-child {
+  margin-bottom: 0;
+}
+
+.minimal-project-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: #111;
+}
+
+.minimal-project-link {
+  font-size: 11px;
+  color: #888;
+  margin-left: 6px;
+}
+
+.minimal-project-technologies {
+  font-size: 12px;
+  color: #888;
+  margin-top: 2px;
+}
+
+.minimal-project-description {
+  font-size: 12.5px;
+  color: #444;
+  margin-top: 4px;
+  line-height: 1.65;
+}
+
+/* Certifications */
+.minimal-certification-entry {
+  margin-bottom: 6px;
+}
+
+.minimal-certification-name {
+  font-weight: 600;
+  font-size: 13px;
+  color: #222;
+}
+
+.minimal-certification-issuer {
+  font-size: 12.5px;
+  color: #555;
+}
+
+.minimal-certification-date {
+  font-size: 12px;
+  color: #888;
+}
+
+/* Languages */
+.minimal-language-entry {
+  display: inline;
+  font-size: 13px;
+}
+
+.minimal-language-name {
+  font-weight: 500;
+  color: #222;
+}
+
+.minimal-language-proficiency {
+  color: #888;
+}
+
+/* ==========================================================================
+   8. ATS TEMPLATE STYLES
+   Plain, maximally parsable. No colors, no fancy layout.
+   ========================================================================== */
+
+.ats-resume .resume-paper {
+  font-family: 'Arial', 'Helvetica Neue', Helvetica, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Header */
+.ats-header {
+  margin-bottom: 14px;
+}
+
+.ats-name {
+  font-size: 24px;
+  font-weight: 700;
+  color: #000;
+  margin-bottom: 4px;
+}
+
+.ats-title {
+  font-size: 14px;
+  font-weight: 400;
+  color: #333;
+  margin-bottom: 6px;
+}
+
+.ats-contact {
+  font-size: 12px;
+  color: #333;
+  line-height: 1.6;
+}
+
+.ats-contact-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ats-contact-item {
+  white-space: nowrap;
+}
+
+.ats-contact-separator {
+  color: #999;
+  user-select: none;
+}
+
+/* Sections */
+.ats-section {
+  margin-top: 10px;
+}
+
+.ats-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #000;
+  border-bottom: 1px solid #000;
+  padding-bottom: 2px;
+  margin-bottom: 8px;
+}
+
+/* Summary */
+.ats-summary-text {
+  font-size: 13px;
+  color: #222;
+  line-height: 1.55;
+}
+
+/* Experience */
+.ats-entry {
+  margin-bottom: 12px;
+}
+
+.ats-entry:last-child {
+  margin-bottom: 0;
+}
+
+.ats-entry-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #000;
+}
+
+.ats-entry-company {
+  font-size: 13px;
+  font-weight: 600;
+  color: #222;
+}
+
+.ats-entry-meta {
+  font-size: 12px;
+  color: #444;
+}
+
+.ats-entry-description {
+  font-size: 13px;
+  color: #222;
+  margin-top: 3px;
+  line-height: 1.5;
+}
+
+.ats-bullets {
+  padding-left: 18px;
+  margin-top: 4px;
+}
+
+.ats-bullets li {
+  list-style: disc;
+  margin-bottom: 3px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #222;
+}
+
+/* Skills */
+.ats-skills-category {
+  margin-bottom: 4px;
+}
+
+.ats-skills-category-name {
+  font-weight: 700;
+  font-size: 13px;
+  color: #000;
+}
+
+.ats-skills-list {
+  font-size: 13px;
+  color: #222;
+}
+
+/* Education */
+.ats-education-entry {
+  margin-bottom: 8px;
+}
+
+.ats-education-entry:last-child {
+  margin-bottom: 0;
+}
+
+.ats-education-degree {
+  font-weight: 700;
+  font-size: 13px;
+  color: #000;
+}
+
+.ats-education-institution {
+  font-size: 13px;
+  color: #222;
+}
+
+.ats-education-details {
+  font-size: 12px;
+  color: #444;
+  margin-top: 2px;
+}
+
+/* Projects */
+.ats-project-entry {
+  margin-bottom: 8px;
+}
+
+.ats-project-entry:last-child {
+  margin-bottom: 0;
+}
+
+.ats-project-name {
+  font-weight: 700;
+  font-size: 13px;
+  color: #000;
+}
+
+.ats-project-technologies {
+  font-size: 12px;
+  color: #444;
+  margin-top: 2px;
+}
+
+.ats-project-description {
+  font-size: 13px;
+  color: #222;
+  margin-top: 3px;
+  line-height: 1.5;
+}
+
+.ats-project-bullets {
+  padding-left: 18px;
+  margin-top: 4px;
+}
+
+.ats-project-bullets li {
+  list-style: disc;
+  margin-bottom: 3px;
+  font-size: 13px;
+  color: #222;
+  line-height: 1.5;
+}
+
+/* Certifications */
+.ats-certification-entry {
+  margin-bottom: 5px;
+}
+
+.ats-certification-name {
+  font-weight: 700;
+  font-size: 13px;
+  color: #000;
+}
+
+.ats-certification-issuer {
+  font-size: 13px;
+  color: #222;
+}
+
+.ats-certification-date {
+  font-size: 12px;
+  color: #444;
+}
+
+/* Languages */
+.ats-language-entry {
+  display: inline;
+  font-size: 13px;
+}
+
+.ats-language-name {
+  font-weight: 700;
+  color: #000;
+}
+
+.ats-language-proficiency {
+  color: #444;
+}
