@@ -120,6 +120,42 @@ ollama pull phi3
 
 ---
 
+## 🔌 Using Cloud API Providers (OpenAI, Gemini, Anthropic)
+
+OpenResumeCraft fully supports cloud-based models for high-quality, high-speed optimizations. 
+
+### 1. Model Configuration
+The application is pre-configured with the following optimized model choices:
+*   **OpenAI**: `GPT-4o Mini` (recommended for general value/speed) and `GPT-4o` (recommended for advanced reasoning).
+*   **Google Gemini**: `Gemini 2.0 Flash` and `Gemini 1.5 Pro`.
+*   **Anthropic**: `Claude 3.5 Haiku` and `Claude Sonnet 4`.
+*   **Groq**: `Llama 3.1 8B` (instant speed) and `Llama 3.3 70B` (advanced quality).
+*   **DeepSeek**: `DeepSeek V3` (great value) and `DeepSeek Reasoner` (deep logic).
+
+### 2. Setting Up Your API Keys
+You can configure your API keys in two different ways:
+
+#### Method A: Direct UI Inputs
+1.  Open the **AI Engine Settings** box in the left Sidebar.
+2.  Switch the **AI Provider** to **OpenAI** (or your preferred cloud provider).
+3.  Paste your API key in the password input immediately below the selector. The key is securely held inside your browser's local state and is only passed via headers to the proxy server during execution.
+
+#### Method B: Environment Variables (Frictionless Integration)
+To avoid having to paste your API keys every time you open or refresh the application, you can pre-define them inside a local `.env` file in the project root:
+1.  Create a file named `.env` in the root of the project:
+    ```bash
+    touch .env
+    ```
+2.  Add your keys as environment variables:
+    ```env
+    OPENAI_API_KEY=sk-proj-your-openai-api-key-here
+    GEMINI_API_KEY=AIzaSy-your-gemini-key-here
+    ANTHROPIC_API_KEY=sk-ant-your-anthropic-key-here
+    ```
+3.  Launch the application using `npm run dev`. The backend proxy will automatically detect these environment variables. When you select a provider in the UI, you can leave the API key input completely blank—the server will seamlessly fall back to your `.env` keys!
+
+---
+
 ## 🎨 Resume Templates
 
 Choose between **4 professionally tailored layouts** in the Preview tab:

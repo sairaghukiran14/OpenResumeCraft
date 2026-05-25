@@ -79,8 +79,15 @@ app.get('/api/ollama-models', async (req, res) => {
 app.post('/api/generate', async (req, res) => {
   const { providerId, modelId, apiKey, systemPrompt, userPrompt, useCache = true } = req.body;
 
-  if (!providerId || !modelId || (providerId !== 'ollama' && !apiKey)) {
-    return res.status(400).json({ error: 'Missing required parameters: providerId, modelId, apiKey' });
+  // Key fallback
+  let activeKey = apiKey ? apiKey.trim() : '';
+  if (!activeKey && providerId !== 'ollama') {
+    const envKeyName = `${providerId.toUpperCase()}_API_KEY`;
+    activeKey = process.env[envKeyName] || '';
+  }
+
+  if (!providerId || !modelId || (providerId !== 'ollama' && !activeKey)) {
+    return res.status(400).json({ error: `Missing required parameter: API Key is required for ${providerId}` });
   }
 
   // Create a cache key from prompts + model + provider (excluding API key)
@@ -113,7 +120,7 @@ app.post('/api/generate', async (req, res) => {
         url = provider.baseUrl;
         headers = {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey ? apiKey.trim() : 'ollama'}`,
+          'Authorization': `Bearer ${activeKey || 'ollama'}`,
         };
         body = {
           model: modelId,
@@ -127,7 +134,7 @@ app.post('/api/generate', async (req, res) => {
         break;
 
       case 'gemini':
-        url = `${provider.baseUrl}/${modelId}:generateContent?key=${apiKey.trim()}`;
+        url = `${provider.baseUrl}/${modelId}:generateContent?key=${activeKey}`;
         headers = {
           'Content-Type': 'application/json'
         };
@@ -152,7 +159,7 @@ app.post('/api/generate', async (req, res) => {
         url = provider.baseUrl;
         headers = {
           'Content-Type': 'application/json',
-          'x-api-key': apiKey.trim(),
+          'x-api-key': activeKey,
           'anthropic-version': '2023-06-01'
         };
         body = {
@@ -275,8 +282,15 @@ app.post('/api/generate', async (req, res) => {
 app.post('/api/parse-resume', async (req, res) => {
   const { providerId, modelId, apiKey, rawText } = req.body;
 
-  if (!providerId || !modelId || (providerId !== 'ollama' && !apiKey) || !rawText) {
-    return res.status(400).json({ error: 'Missing required parameters: providerId, modelId, apiKey, rawText' });
+  // Key fallback
+  let activeKey = apiKey ? apiKey.trim() : '';
+  if (!activeKey && providerId !== 'ollama') {
+    const envKeyName = `${providerId.toUpperCase()}_API_KEY`;
+    activeKey = process.env[envKeyName] || '';
+  }
+
+  if (!providerId || !modelId || (providerId !== 'ollama' && !activeKey) || !rawText) {
+    return res.status(400).json({ error: 'Missing required parameters: providerId, modelId, activeKey, rawText' });
   }
 
   const provider = PROVIDERS[providerId];
@@ -302,7 +316,7 @@ app.post('/api/parse-resume', async (req, res) => {
         url = provider.baseUrl;
         headers = {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey ? apiKey.trim() : 'ollama'}`,
+          'Authorization': `Bearer ${activeKey || 'ollama'}`,
         };
         body = {
           model: modelId,
@@ -316,7 +330,7 @@ app.post('/api/parse-resume', async (req, res) => {
         break;
 
       case 'gemini':
-        url = `${provider.baseUrl}/${modelId}:generateContent?key=${apiKey.trim()}`;
+        url = `${provider.baseUrl}/${modelId}:generateContent?key=${activeKey}`;
         headers = {
           'Content-Type': 'application/json'
         };
@@ -341,7 +355,7 @@ app.post('/api/parse-resume', async (req, res) => {
         url = provider.baseUrl;
         headers = {
           'Content-Type': 'application/json',
-          'x-api-key': apiKey.trim(),
+          'x-api-key': activeKey,
           'anthropic-version': '2023-06-01'
         };
         body = {
