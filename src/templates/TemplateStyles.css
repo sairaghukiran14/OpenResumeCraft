@@ -53,15 +53,23 @@
   .classic-education-entry,
   .classic-project-entry,
   .classic-certification-entry,
+  .classic-skills-category,
+  .classic-language-entry,
   .modern-entry,
   .modern-education-entry,
   .modern-project-entry,
   .minimal-entry,
   .minimal-education-entry,
   .minimal-project-entry,
+  .minimal-certification-entry,
+  .minimal-skills-category,
+  .minimal-language-entry,
   .ats-entry,
   .ats-education-entry,
-  .ats-project-entry {
+  .ats-project-entry,
+  .ats-certification-entry,
+  .ats-skills-category,
+  .ats-language-entry {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
