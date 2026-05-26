@@ -78,10 +78,26 @@ const createTwoColumnRow = (leftText, rightText, isBoldLeft = false, isBoldRight
   });
 };
 
-export async function exportToWord(resumeData, filename = 'resume') {
+export async function exportToWord(resumeData, filename = 'resume', settings = {}) {
   if (!resumeData) throw new Error('Resume data is required');
 
   const { contactInfo = {}, summary = '', experience = [], education = [], skills = {}, certifications = [], projects = [] } = resumeData;
+
+  const isCompact = settings?.compactLayout || false;
+
+  const spacing = {
+    headerAfter: isCompact ? 60 : 120,
+    headerSectionAfter: isCompact ? 100 : 240,
+    sectionBefore: isCompact ? 140 : 240,
+    sectionAfter: isCompact ? 60 : 120,
+    summaryAfter: isCompact ? 100 : 180,
+    twoColGap: isCompact ? 85 : 180,
+    titleBefore: isCompact ? 20 : 40,
+    titleAfter: isCompact ? 30 : 80,
+    bulletSpacing: isCompact ? 15 : 30,
+    skillSpacingBefore: isCompact ? 30 : 60,
+    skillSpacingAfter: isCompact ? 20 : 40,
+  };
 
   const docSections = [];
 
@@ -133,7 +149,7 @@ export async function exportToWord(resumeData, filename = 'resume') {
     headerParagraphs.push(
       new Paragraph({
         alignment: AlignmentType.CENTER,
-        spacing: { before: 0, after: 240 },
+        spacing: { before: 0, after: spacing.headerSectionAfter },
         children: [
           new TextRun({
             text: socialDetails.join('   |   '),
@@ -152,7 +168,7 @@ export async function exportToWord(resumeData, filename = 'resume') {
   const createSectionHeader = (title) => {
     return new Paragraph({
       heading: HeadingLevel.HEADING_2,
-      spacing: { before: 240, after: 120 },
+      spacing: { before: spacing.sectionBefore, after: spacing.sectionAfter },
       keepWithNext: true,
       border: {
         bottom: {
@@ -179,7 +195,7 @@ export async function exportToWord(resumeData, filename = 'resume') {
     docSections.push(createSectionHeader('Professional Summary'));
     docSections.push(
       new Paragraph({
-        spacing: { before: 60, after: 180 },
+        spacing: { before: 60, after: spacing.summaryAfter },
         lineSpacing: { before: 0, after: 0, line: 280 }, // 1.15 line spacing
         children: [
           new TextRun({
@@ -202,12 +218,12 @@ export async function exportToWord(resumeData, filename = 'resume') {
       const compName = clean(exp.company) + (clean(exp.location) ? ` (${clean(exp.location)})` : '');
       const dateRangeStr = `${clean(exp.startDate)} – ${clean(exp.endDate)}`;
       
-      docSections.push(createTwoColumnRow(compName, dateRangeStr, true, true, false, false, '111111', '111111', idx === 0 ? 60 : 180));
+      docSections.push(createTwoColumnRow(compName, dateRangeStr, true, true, false, false, '111111', '111111', idx === 0 ? (isCompact ? 30 : 60) : spacing.twoColGap));
 
       // Job Title Line
       docSections.push(
         new Paragraph({
-          spacing: { before: 40, after: 80 },
+          spacing: { before: spacing.titleBefore, after: spacing.titleAfter },
           keepWithNext: true,
           children: [
             new TextRun({
@@ -228,7 +244,7 @@ export async function exportToWord(resumeData, filename = 'resume') {
             docSections.push(
               new Paragraph({
                 bullet: { level: 0 },
-                spacing: { before: 30, after: 30 },
+                spacing: { before: spacing.bulletSpacing, after: spacing.bulletSpacing },
                 lineSpacing: { line: 260 },
                 children: [
                   new TextRun({
@@ -257,7 +273,7 @@ export async function exportToWord(resumeData, filename = 'resume') {
     if (techSkills.length > 0) {
       docSections.push(
         new Paragraph({
-          spacing: { before: 60, after: 40 },
+          spacing: { before: spacing.skillSpacingBefore, after: spacing.skillSpacingAfter },
           children: [
             new TextRun({ text: 'Technical Skills: ', bold: true, size: 21, font: 'Calibri', color: '111111' }),
             new TextRun({ text: techSkills.join(', '), size: 21, font: 'Calibri', color: '111111' }),
@@ -269,7 +285,7 @@ export async function exportToWord(resumeData, filename = 'resume') {
     if (softSkills.length > 0) {
       docSections.push(
         new Paragraph({
-          spacing: { before: 40, after: 40 },
+          spacing: { before: spacing.bulletSpacing, after: spacing.bulletSpacing },
           children: [
             new TextRun({ text: 'Soft Skills: ', bold: true, size: 21, font: 'Calibri', color: '111111' }),
             new TextRun({ text: softSkills.join(', '), size: 21, font: 'Calibri', color: '111111' }),
@@ -281,7 +297,7 @@ export async function exportToWord(resumeData, filename = 'resume') {
     if (tools.length > 0) {
       docSections.push(
         new Paragraph({
-          spacing: { before: 40, after: 60 },
+          spacing: { before: spacing.bulletSpacing, after: spacing.skillSpacingAfter },
           children: [
             new TextRun({ text: 'Tools & Technologies: ', bold: true, size: 21, font: 'Calibri', color: '111111' }),
             new TextRun({ text: tools.join(', '), size: 21, font: 'Calibri', color: '111111' }),
@@ -298,12 +314,12 @@ export async function exportToWord(resumeData, filename = 'resume') {
     projects.forEach((proj, idx) => {
       const projLinkStr = proj.link ? ` [${clean(proj.link)}]` : '';
       
-      docSections.push(createTwoColumnRow(clean(proj.name), projLinkStr, true, false, false, true, '111111', '111111', idx === 0 ? 60 : 180));
+      docSections.push(createTwoColumnRow(clean(proj.name), projLinkStr, true, false, false, true, '111111', '111111', idx === 0 ? (isCompact ? 30 : 60) : spacing.twoColGap));
 
       if (proj.technologies && proj.technologies.length > 0) {
         docSections.push(
           new Paragraph({
-            spacing: { before: 20, after: 40 },
+            spacing: { before: spacing.titleBefore, after: spacing.titleBefore },
             keepWithNext: true,
             children: [
               new TextRun({
@@ -321,7 +337,7 @@ export async function exportToWord(resumeData, filename = 'resume') {
       if (proj.description) {
         docSections.push(
           new Paragraph({
-            spacing: { before: 40, after: 80 },
+            spacing: { before: spacing.titleBefore, after: spacing.titleAfter },
             children: [
               new TextRun({
                 text: clean(proj.description),
@@ -343,12 +359,12 @@ export async function exportToWord(resumeData, filename = 'resume') {
     education.forEach((edu, idx) => {
       const eduTitle = `${clean(edu.degree)} – ${clean(edu.institution)}` + (edu.gpa ? ` (GPA: ${edu.gpa})` : '');
       
-      docSections.push(createTwoColumnRow(eduTitle, clean(edu.year), true, true, false, false, '111111', '111111', idx === 0 ? 60 : 180));
+      docSections.push(createTwoColumnRow(eduTitle, clean(edu.year), true, true, false, false, '111111', '111111', idx === 0 ? (isCompact ? 30 : 60) : spacing.twoColGap));
 
       if (clean(edu.location)) {
         docSections.push(
           new Paragraph({
-            spacing: { before: 20, after: 60 },
+            spacing: { before: spacing.titleBefore, after: spacing.titleAfter },
             children: [
               new TextRun({
                 text: clean(edu.location),
@@ -371,7 +387,7 @@ export async function exportToWord(resumeData, filename = 'resume') {
     certifications.forEach((cert, idx) => {
       const certTitle = clean(cert.name) + (clean(cert.issuer) ? ` — ${clean(cert.issuer)}` : '');
       
-      docSections.push(createTwoColumnRow(certTitle, clean(cert.year), true, true, false, false, '111111', '111111', idx === 0 ? 40 : 120));
+      docSections.push(createTwoColumnRow(certTitle, clean(cert.year), true, true, false, false, '111111', '111111', idx === 0 ? (isCompact ? 20 : 40) : (isCompact ? 60 : 120)));
     });
   }
 
@@ -382,10 +398,10 @@ export async function exportToWord(resumeData, filename = 'resume') {
         properties: {
           page: {
             margin: {
-              top: 1080, // 0.75in
-              bottom: 1080,
-              left: 1080,
-              right: 1080,
+              top: isCompact ? 720 : 1080, // 0.5in margins instead of 0.75in margins!
+              bottom: isCompact ? 720 : 1080,
+              left: isCompact ? 720 : 1080,
+              right: isCompact ? 720 : 1080,
             },
           },
         },

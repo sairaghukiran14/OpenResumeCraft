@@ -441,6 +441,33 @@ export default function Sidebar() {
             </select>
           </div>
 
+          <div className="input-group" style={{ marginTop: 'var(--space-1)', padding: 'var(--space-2.5)', backgroundColor: 'rgba(99, 102, 241, 0.03)', borderRadius: 'var(--radius-md)', border: '1px dashed rgba(99, 102, 241, 0.15)' }}>
+            <label className="input-label" style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', margin: 0 }}>
+              <input 
+                type="checkbox" 
+                checked={settings.compactLayout || false} 
+                onChange={(e) => {
+                  dispatch({
+                    type: 'SET_SETTINGS',
+                    payload: { compactLayout: e.target.checked }
+                  });
+                  toast.success(
+                    e.target.checked 
+                      ? 'Compact Layout Enabled! Spacing compressed for single-page fit.' 
+                      : 'Standard Spacing Restored!'
+                  );
+                }} 
+                style={{ cursor: 'pointer', accentColor: 'var(--color-primary)', width: '15px', height: '15px' }}
+              />
+              <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text-primary)' }}>
+                Compact Spacing (Force One Page)
+              </span>
+            </label>
+            <p style={{ fontSize: '9.5px', margin: '4px 0 0 23px', color: 'var(--color-text-tertiary)', lineHeight: 1.35 }}>
+              Slightly compresses margins, cell paddings, and font sizes so the text moves upward to fit on a single page.
+            </p>
+          </div>
+
           {apiError && (
             <div className="badge badge-error" style={{ gap: 'var(--space-2)', padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', lineHeight: 1.3 }}>
               <AlertCircle size={20} style={{ flexShrink: 0 }} />

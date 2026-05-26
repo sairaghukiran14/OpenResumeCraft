@@ -321,7 +321,7 @@ const renderSection = (sectionId, resumeData) => {
 };
 
 /* ── Main Component ────────────────────────────────────────────────── */
-const ClassicTemplate = ({ resumeData = {}, sectionOrder = [] }) => {
+const ClassicTemplate = ({ resumeData = {}, sectionOrder = [], settings = {} }) => {
   const { personalInfo = {} } = resumeData;
 
   // Fallback section order when none is provided
@@ -332,7 +332,7 @@ const ClassicTemplate = ({ resumeData = {}, sectionOrder = [] }) => {
 
   return (
     <div className="classic-resume">
-      <div className="resume-paper">
+      <div className={`resume-paper ${settings.compactLayout ? 'compact-layout' : ''}`}>
         {/* Header */}
         <div className="classic-header">
           {personalInfo.name && <h1 className="classic-name">{personalInfo.name}</h1>}

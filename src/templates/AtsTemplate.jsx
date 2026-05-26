@@ -319,7 +319,7 @@ const renderSection = (sectionId, resumeData) => {
 };
 
 /* ── Main Component ────────────────────────────────────────────────── */
-const AtsTemplate = ({ resumeData = {}, sectionOrder = [] }) => {
+const AtsTemplate = ({ resumeData = {}, sectionOrder = [], settings = {} }) => {
   const { personalInfo = {} } = resumeData;
 
   const order =
@@ -329,7 +329,7 @@ const AtsTemplate = ({ resumeData = {}, sectionOrder = [] }) => {
 
   return (
     <div className="ats-resume">
-      <div className="resume-paper">
+      <div className={`resume-paper ${settings.compactLayout ? 'compact-layout' : ''}`}>
         <Header personalInfo={personalInfo} />
         {order.map((sectionId) => renderSection(sectionId, resumeData))}
       </div>

@@ -318,7 +318,7 @@ const renderSection = (sectionId, resumeData) => {
 };
 
 /* ── Main Component ────────────────────────────────────────────────── */
-const MinimalTemplate = ({ resumeData = {}, sectionOrder = [] }) => {
+const MinimalTemplate = ({ resumeData = {}, sectionOrder = [], settings = {} }) => {
   const { personalInfo = {} } = resumeData;
 
   const order =
@@ -328,7 +328,7 @@ const MinimalTemplate = ({ resumeData = {}, sectionOrder = [] }) => {
 
   return (
     <div className="minimal-resume">
-      <div className="resume-paper">
+      <div className={`resume-paper ${settings.compactLayout ? 'compact-layout' : ''}`}>
         <Header personalInfo={personalInfo} />
         {order.map((sectionId) => renderSection(sectionId, resumeData))}
       </div>

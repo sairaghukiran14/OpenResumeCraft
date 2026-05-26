@@ -1188,3 +1188,109 @@
 .ats-language-proficiency {
   color: #444;
 }
+
+/* ==========================================================================
+   COMPACT LAYOUT OVERRIDES (Force Single-Page Fit)
+   ========================================================================== */
+.resume-paper.compact-layout {
+  padding: 10mm 12mm !important;
+  line-height: 1.35 !important;
+}
+
+/* Classic Template Spacings */
+.resume-paper.compact-layout .classic-header {
+  margin-bottom: 8px !important;
+}
+.resume-paper.compact-layout .classic-name {
+  font-size: 20px !important;
+}
+.resume-paper.compact-layout .classic-section {
+  margin-top: 8px !important;
+}
+.resume-paper.compact-layout .classic-section-title {
+  margin-bottom: 4px !important;
+}
+.resume-paper.compact-layout .classic-entry {
+  margin-bottom: 5px !important;
+}
+.resume-paper.compact-layout .classic-bullets {
+  margin-top: 2px !important;
+}
+.resume-paper.compact-layout .classic-bullets li {
+  margin-bottom: 1.5px !important;
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+}
+.resume-paper.compact-layout .classic-skills-category {
+  margin-bottom: 3px !important;
+}
+.resume-paper.compact-layout .classic-summary-text {
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+}
+
+/* Minimal Template Spacings */
+.resume-paper.compact-layout .minimal-header {
+  margin-bottom: 8px !important;
+}
+.resume-paper.compact-layout .minimal-section {
+  margin-top: 8px !important;
+}
+.resume-paper.compact-layout .minimal-section-title {
+  margin-bottom: 4px !important;
+}
+.resume-paper.compact-layout .minimal-entry {
+  margin-bottom: 5px !important;
+}
+.resume-paper.compact-layout .minimal-bullets li {
+  margin-bottom: 1.5px !important;
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+}
+.resume-paper.compact-layout .minimal-skills-category {
+  margin-bottom: 3px !important;
+}
+
+/* Modern Template Spacings */
+.resume-paper.compact-layout .modern-sidebar {
+  padding: 12px !important;
+}
+.resume-paper.compact-layout .modern-main {
+  padding: 12px !important;
+}
+.resume-paper.compact-layout .modern-name {
+  font-size: 20px !important;
+}
+.resume-paper.compact-layout .modern-bullets li {
+  margin-bottom: 1.5px !important;
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+}
+.resume-paper.compact-layout .modern-section {
+  margin-top: 8px !important;
+}
+.resume-paper.compact-layout .modern-skills-list {
+  font-size: 11px !important;
+}
+
+/* ATS Template Spacings */
+.resume-paper.compact-layout .ats-header {
+  margin-bottom: 8px !important;
+}
+.resume-paper.compact-layout .ats-name {
+  font-size: 20px !important;
+}
+.resume-paper.compact-layout .ats-section {
+  margin-top: 8px !important;
+}
+.resume-paper.compact-layout .ats-entry {
+  margin-bottom: 5px !important;
+}
+.resume-paper.compact-layout .ats-bullets li {
+  margin-bottom: 1.5px !important;
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+}
+.resume-paper.compact-layout .ats-skills-category {
+  margin-bottom: 3px !important;
+}

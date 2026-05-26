@@ -394,6 +394,7 @@ export default function ResumePreview() {
                 <TemplateComponent 
                   resumeData={mappedResumeData} 
                   sectionOrder={sectionOrder} 
+                  settings={state.settings}
                 />
               )}
             </div>

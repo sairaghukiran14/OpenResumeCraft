@@ -313,7 +313,7 @@ const renderMainSection = (sectionId, resumeData) => {
 };
 
 /* ── Main Component ────────────────────────────────────────────────── */
-const ModernTemplate = ({ resumeData = {}, sectionOrder = [] }) => {
+const ModernTemplate = ({ resumeData = {}, sectionOrder = [], settings = {} }) => {
   const { personalInfo = {} } = resumeData;
 
   const order =
@@ -327,7 +327,7 @@ const ModernTemplate = ({ resumeData = {}, sectionOrder = [] }) => {
 
   return (
     <div className="modern-resume">
-      <div className="resume-paper">
+      <div className={`resume-paper ${settings.compactLayout ? 'compact-layout' : ''}`}>
         {/* ── Sidebar ────────────────────────────────── */}
         <aside className="modern-sidebar">
           {/* Identity */}

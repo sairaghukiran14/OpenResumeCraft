@@ -54,6 +54,7 @@ const initialState = {
       deepseek: '',
     },
     tone: 'professional', // 'professional' | 'technical' | 'executive'
+    compactLayout: false, // Compresses spacing to fit content on a single page
   },
 
   // Job description
