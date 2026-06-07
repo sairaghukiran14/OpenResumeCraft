@@ -21,6 +21,33 @@ Equipped with a deterministic, local ATS keyword alignment engine, real-time enh
 
 ---
 
+## ⚡ Premium ATS Scoring & Performance Engine
+
+OpenResumeCraft runs an advanced scoring and optimization pipeline that matches industry-grade ATS parsing rules across six precise dimensions:
+
+### 1. The 6-Dimension Scoring Metric
+The overall **ATS Match Score** is computed deterministically using standard parsing rule weights:
+*   **Keyword Score (40%)**: Calculates frequency-based matching of keywords in the Job Description against the resume. Includes a `+5` points bonus if the top 5 most critical keywords appear in the profile summary.
+*   **Format Score (20%)**: Checks structure constraints. Deducts 10 points if the `selectedTemplate` is `'modern'` to discourage complex multi-column layouts that confuse traditional parsers.
+*   **Structure Score (15%)**: Assures the presence of all five core sections (`contactInfo`, `summary`, `experience`, `education`, `skills`) and verifies their correct chronological sequence and naming.
+*   **Readability Score (10%)**: Validates standard `Month YYYY` date syntax, checks that experience points are written as lists rather than inline text blocks, and scans starting words against a whitelisted action verb array.
+*   **Quantification Score (10%)**: Measures numerical impact density (e.g., metric numbers, growth percentages, dollar values) in experience bullet points. Renders clickable suggestions on non-quantified bullets.
+*   **Title Match Score (5%)**: Checks whether the target Job Description title matches (exactly or partially) the candidate's professional title or resume summary keywords.
+
+### 2. Core Scoring & Optimization Utilities
+*   **Date Standardizer ([dateFormatter.js](file:///Users/sairaghukiranavula/Projects/OpenResumeCraft/src/utils/dateFormatter.js))**: Auto-translates arbitrary date inputs (like `2023-05`, `05/2023`, or `May 23`) into standard `Month YYYY` format in templates and scorers to prevent formatting scoring penalties.
+*   **Action Verb Post-Processor ([verbProcessor.js](file:///Users/sairaghukiranavula/Projects/OpenResumeCraft/src/utils/verbProcessor.js))**: Intercepts AI resume tailoring responses. If any experience bullets start with a weak or non-whitelisted verb, it maps it or prepends a compliant action verb (e.g., *Spearheaded*, *Optimized*, *Designed*), securing a 100% Readability score.
+*   **Recalculation Debouncer**: Implements a `300ms` debouncer in [AtsMatchAnalytics.jsx](file:///Users/sairaghukiranavula/Projects/OpenResumeCraft/src/components/AtsMatchAnalytics/AtsMatchAnalytics.jsx) to prevent recalculating scores on every keystroke, resulting in fluid editing.
+*   **Fuzzy Synonym Taxonomy**: Maps technical equivalents (e.g., `aws` <-> `Amazon Web Services`, `nextjs` <-> `Next.js`, `ts` <-> `TypeScript`) within [atsScoringEngine.js](file:///Users/sairaghukiranavula/Projects/OpenResumeCraft/src/services/atsScoringEngine.js) to allow semantic scoring matches.
+*   **Redis Caching Client**: Connects to a local Redis server in [server/index.js](file:///Users/sairaghukiranavula/Projects/OpenResumeCraft/server/index.js) to cache prompt engineering results with a 24-hour TTL, falling back silently to a memory Map if Redis is inactive.
+
+### 3. Automated Benchmark Verification
+OpenResumeCraft includes a benchmark suite that evaluates the application against 100 simulated job descriptions (50 ReactJS, 50 Frontend roles):
+*   **Log file**: [linkedin_runs_100.json](file:///Users/sairaghukiranavula/Projects/OpenResumeCraft/scratch/linkedin_runs_100.json) contains the raw results, including target links, baseline scores, tailored scores, and optimization modes.
+*   **Analysis report**: [analysis_results_linkedin_100.md](file:///Users/sairaghukiranavula/.gemini/antigravity-ide/brain/f6365133-5156-4229-8a52-c7e6a20d5eb6/analysis_results_linkedin_100.md) records details of the run. On average, the baseline score of 77.83% improved to 90.71% (+12.88%) post-tailoring.
+
+---
+
 ## 🚀 Getting Started & Detailed Usage Guide
 
 ### 1. Prerequisites
@@ -189,22 +216,30 @@ Choose between **4 professionally tailored layouts** in the Preview tab:
 ## 🛠️ Project Structure
 
 ```text
+├── public/
+│   └── favicon.svg          # Premium SVG sidebar icon alignment logo
+├── scratch/
+│   ├── run_linkedin_analysis_100.js # Automated 100 job posting benchmark test script
+│   └── linkedin_runs_100.json       # Benchmark run log mapping links and scores
 ├── server/
-│   └── index.js             # Express server (PDF/DOCX extraction proxy & AI relay)
+│   └── index.js             # Express server (PDF/DOCX extraction proxy, AI relay, Redis cache)
 ├── src/
 │   ├── components/
-│   │   ├── AtsMatchAnalytics/  # Reactive score meter & heuristic tips
-│   │   ├── Editor/             # Unfrozen forms for direct experience tuning
+│   │   ├── AtsMatchAnalytics/  # Reactive score meter, debounced scorer & heuristic tips
+│   │   ├── Editor/             # Forms with inline quantification suggestions tooltips
 │   │   ├── Preview/            # WYSIWYG live document render canvas
 │   │   └── Sidebar/            # AI configuration panel & Ollama selector
 │   ├── context/
 │   │   └── AppContext.jsx   # Global useReducer state manager & local storage hooks
 │   ├── services/
 │   │   ├── aiProviders.js   # Unified OpenAI-compatible request constructors
-│   │   ├── atsScoringEngine.js # Deterministic local ATS term mapping
+│   │   ├── atsScoringEngine.js # Deterministic 6-dimension score & synonym engine
 │   │   ├── exportPDF.js     # Page-break-safe PDF exporter
 │   │   ├── exportWord.js    # TWIP-column formatted DOCX builder
-│   │   └── promptEngine.js  # Content-preserving optimization system prompts
+│   │   └── promptEngine.js  # Content-preserving AI rephrasing prompts
+│   ├── utils/
+│   │   ├── dateFormatter.js # Standardizer to normalise input dates to Month YYYY
+│   │   └── verbProcessor.js # Post-processor enforcing whitelisted action verbs
 │   └── templates/           # Layout-specific JSX components
 ├── package.json
 └── README.md
