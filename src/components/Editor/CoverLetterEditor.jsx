@@ -184,18 +184,7 @@ export default function CoverLetterEditor() {
               <button
                 key={styleOpt.id}
                 onClick={() => handleStyleChange(styleOpt.id)}
-                className={`btn ${isSelected ? 'btn-primary' : 'btn-secondary'}`}
-                style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  textAlign: 'left',
-                  padding: 'var(--space-4)',
-                  gap: 'var(--space-4)',
-                  border: isSelected ? '1.5px solid var(--color-accent-violet-dark)' : '1px solid var(--color-border-primary)',
-                  background: isSelected ? 'rgba(99, 102, 241, 0.05)' : 'var(--color-bg-secondary)',
-                  transition: 'all 0.2s ease',
-                  borderRadius: 'var(--radius-lg)'
-                }}
+                className={`cover-letter-style-btn ${isSelected ? 'active' : ''}`}
               >
                 <div style={{
                   background: isSelected ? 'var(--color-accent-violet-dark)' : 'var(--color-bg-tertiary)',

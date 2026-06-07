@@ -1205,3 +1205,35 @@ a:hover {
   background-color: var(--color-bg-secondary) !important;
 }
 
+/* ---------- Cover Letter Style Choice Buttons ---------- */
+.cover-letter-style-btn {
+  display: flex;
+  align-items: flex-start;
+  text-align: left;
+  width: 100%;
+  padding: var(--space-4);
+  gap: var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-primary);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: var(--font-sans);
+  white-space: normal;
+  line-height: 1.4;
+}
+
+.cover-letter-style-btn:hover {
+  border-color: rgba(99, 102, 241, 0.4);
+  background: var(--color-bg-tertiary);
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.05);
+}
+
+.cover-letter-style-btn.active {
+  border: 1.5px solid var(--color-accent-violet-dark) !important;
+  background: rgba(99, 102, 241, 0.04) !important;
+}
+
+
