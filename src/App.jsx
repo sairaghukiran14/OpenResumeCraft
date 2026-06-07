@@ -3,6 +3,8 @@ import { useApp } from './context/AppContext';
 import Sidebar from './components/Sidebar/Sidebar';
 import ResumeEditor from './components/Editor/ResumeEditor';
 import ResumePreview from './components/Preview/ResumePreview';
+import CoverLetterEditor from './components/Editor/CoverLetterEditor';
+import CoverLetterPreview from './components/Preview/CoverLetterPreview';
 import { 
   Menu, 
   RefreshCw, 
@@ -21,7 +23,7 @@ import { asrkResume } from './data/defaultResume';
 
 export default function App() {
   const { state, dispatch } = useApp();
-  const { activePanel, sidebarOpen, isGenerating } = state;
+  const { activePanel, sidebarOpen, isGenerating, workspaceMode } = state;
 
   // Draggable Divider Resize State
   const [leftWidth, setLeftWidth] = useState(50); // Starts at exactly 50% split as requested
@@ -308,7 +310,7 @@ export default function App() {
       {/* 1. App Header — Clean, Minimalist (No Logo) */}
       <header className="app-header">
         
-        <div className="app-header-left">
+        <div className="app-header-left" style={{ display: 'flex', alignItems: 'center' }}>
           <button 
             onClick={toggleSidebar} 
             className="btn btn-secondary btn-icon btn-sm"
@@ -320,6 +322,52 @@ export default function App() {
           {/* Logo completely removed. Minimal clean text title instead */}
           <div style={{ fontSize: 'var(--text-md)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-primary)', letterSpacing: '0.02em' }}>
             OpenResumeCraft
+          </div>
+
+          {/* Workspace Mode Switcher Tabs */}
+          <div className="workspace-tabs" style={{ display: 'flex', marginLeft: 'var(--space-6)', background: 'var(--color-bg-tertiary)', padding: '2px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border-primary)' }}>
+            <button
+              onClick={() => dispatch({ type: 'SET_WORKSPACE_MODE', payload: 'resume' })}
+              className={`workspace-tab ${workspaceMode === 'resume' ? 'active' : ''}`}
+              style={{
+                border: 'none',
+                background: workspaceMode === 'resume' ? 'var(--color-bg-secondary)' : 'none',
+                color: workspaceMode === 'resume' ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
+                fontSize: '11px',
+                fontWeight: '600',
+                padding: '6px 12px',
+                borderRadius: 'var(--radius-md)',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <FileText size={12} />
+              <span>Resume Builder</span>
+            </button>
+            <button
+              onClick={() => dispatch({ type: 'SET_WORKSPACE_MODE', payload: 'cover-letter' })}
+              className={`workspace-tab ${workspaceMode === 'cover-letter' ? 'active' : ''}`}
+              style={{
+                border: 'none',
+                background: workspaceMode === 'cover-letter' ? 'var(--color-bg-secondary)' : 'none',
+                color: workspaceMode === 'cover-letter' ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
+                fontSize: '11px',
+                fontWeight: '600',
+                padding: '6px 12px',
+                borderRadius: 'var(--radius-md)',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <Edit3 size={12} />
+              <span>Cover Letter</span>
+            </button>
           </div>
         </div>
 
@@ -437,7 +485,7 @@ export default function App() {
 
               {/* Editor Workspace Panel */}
               <main className="editor-panel">
-                <ResumeEditor />
+                {workspaceMode === 'resume' ? <ResumeEditor /> : <CoverLetterEditor />}
               </main>
             </div>
 
@@ -452,7 +500,7 @@ export default function App() {
               className={`right-pane ${activePanel === 'preview' ? 'active' : ''}`}
               style={{ display: activePanel === 'preview' || window.innerWidth > 1024 ? 'flex' : 'none' }}
             >
-              <ResumePreview />
+              {workspaceMode === 'resume' ? <ResumePreview /> : <CoverLetterPreview />}
             </section>
           </>
         )}

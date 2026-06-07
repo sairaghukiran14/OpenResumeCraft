@@ -444,3 +444,102 @@ export function parseScoringResponse(responseText) {
     feedback: parsed.feedback || '',
   };
 }
+
+// ─── Cover Letter Prompts ──────────────────────────────────────────────
+
+/**
+ * Builds the system instructions for cover letter generation.
+ * Supports three formats: 'short', 'tech', and 'experience'.
+ *
+ * @param {string} style - Style code ('short' | 'tech' | 'experience').
+ * @returns {string} The formatted system prompt.
+ */
+export function buildCoverLetterSystemPrompt(style = 'short') {
+  let styleInstructions = '';
+
+  if (style === 'short') {
+    styleInstructions = `
+- STYLE STYLE: "Short and Impactful".
+- Strict constraint: Keep the response under 250 words and organize it into exactly 3 brief paragraphs.
+- Paragraph 1: An engaging hook stating the target role and expressing enthusiastic alignment.
+- Paragraph 2: Core high-impact professional metrics and achievements matching the job description.
+- Paragraph 3: A call to action and polite sign-off.
+- Focus: High readability, action-oriented tone, and density of achievements.`;
+  } else if (style === 'tech') {
+    styleInstructions = `
+- STYLE STYLE: "Tech-based".
+- Structure: 4 detailed paragraphs.
+- Highlight specific tech stacks, tools, frameworks, and libraries relevant to the job description.
+- Detail complex technical challenges, engineering methodologies, system architecture, and technical execution.
+- Emphasize developer tooling, scalability, clean code, and API design.`;
+  } else if (style === 'experience') {
+    styleInstructions = `
+- STYLE STYLE: "Experience-based / Leadership".
+- Structure: 4 detailed paragraphs.
+- Emphasize leadership, lifecycle ownership, team scaling, mentoring, or cross-functional collaboration.
+- Focus heavily on quantifiable business outcomes (e.g. revenue, growth, user adoption, speed-to-market).
+- Detail complex project delivery, stakeholder management, and team trajectory.`;
+  }
+
+  return `You are a premium, professional resume writer and cover letter writing expert.
+Your objective is to generate a highly tailored, compelling, and formal cover letter matching the candidate's experience and the target job description.
+
+Rules:
+1. Output ONLY the raw text of the cover letter. Do not include markdown code fences, headers, metadata, salutations to placeholders, or extra preambles. Start directly with the formal letter content.
+2. Use standard formal letter parts:
+   - Date: Use "[Current Date]" or the current date.
+   - Recipient: Use "Hiring Manager" or the company name if available in the job description.
+   - Salutation: "Dear Hiring Team," or "Dear Hiring Manager,".
+   - Body Paragraphs (adhering strictly to the selected style).
+   - Sign-off: "Sincerely," followed by the candidate's name.
+3. Mirror high-priority skills and terminology from the job description naturally.
+4. Ensure the achievements are backed by metrics matching the candidate's resume history.
+${styleInstructions}
+
+Generate the formal cover letter text now.`;
+}
+
+/**
+ * Builds the user prompt containing structured resume JSON and target job text.
+ *
+ * @param {object} resumeData - Current resume data object state.
+ * @param {string} jobDescription - Target job posting text.
+ * @param {string} style - Cover letter style.
+ * @returns {string} Fully compiled cover letter user prompt.
+ */
+export function buildCoverLetterUserPrompt(resumeData, jobDescription, style = 'short') {
+  let prompt = `Candidate Resume Data:
+<resume_data>
+Name: ${resumeData.contactInfo?.name || 'Candidate'}
+Current Title: ${resumeData.contactInfo?.title || ''}
+Summary: ${resumeData.summary || ''}
+Experience:
+`;
+
+  if (resumeData.experience?.length) {
+    resumeData.experience.forEach(exp => {
+      prompt += `- ${exp.title} @ ${exp.company} (${exp.startDate} - ${exp.endDate})\n`;
+      if (exp.bullets?.length) {
+        exp.bullets.forEach(b => {
+          prompt += `  • ${b}\n`;
+        });
+      }
+    });
+  }
+
+  prompt += `Skills: ${[
+    ...(resumeData.skills?.technical || []),
+    ...(resumeData.skills?.soft || []),
+    ...(resumeData.skills?.tools || []),
+  ].join(', ')}
+</resume_data>
+
+Target Job Description:
+<job_description>
+${jobDescription.trim()}
+</job_description>
+
+Please write a customized, highly persuasive cover letter in the "${style}" style. Output the letter text directly.`;
+
+  return prompt;
+}

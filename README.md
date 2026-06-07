@@ -18,6 +18,7 @@ Equipped with a deterministic, local ATS keyword alignment engine, real-time enh
 *   **📝 Content-Preserving AI Tailoring**: Core prompts strictly forbid AI models from deleting, truncating, or shortening your experience list. It optimizes and aligns terminology while keeping your bullet counts and history fully intact.
 *   **🔗 Active Contact & Project Links**: Automatically maps clickable email (`mailto:`), LinkedIn URLs, and websites. Projects render dedicated interactive badges linking straight to **GitHub** and **Live Demo** repositories.
 *   **🏷️ Project Status Tags**: Configurable status values ("Completed", "In Progress", "Maintained") render styled HSL badges next to your project headers in all 4 beautiful resume templates.
+*   **✉️ Cover Letter Generator**: Generates highly persuasive cover letters in 3 distinct, professional styles (Short & Impactful, Tech-based, Experience-based) using the active AI engine. Provides click-to-copy and formal PDF export.
 
 ---
 
@@ -111,6 +112,11 @@ Follow this complete customization loop inside the interface to build high-scori
 8.  **Compile & Export**:
     *   **Export PDF**: Generates multi-page PDFs with element-boundary split protection.
     *   **Export Word**: Generates clean, high-contrast, minimalist `.docx` files using solid physical margins to avoid squished layout tables in Microsoft Word and Google Docs.
+9.  **Generate a Tailored Cover Letter**:
+    *   Toggle the workspace mode switcher to **Cover Letter** in the application header.
+    *   Select your preferred style: **Short & Impactful** (3-paragraph punchy layout under 250 words), **Tech-Based** (focuses on code stack and architectural execution), or **Experience-Based** (highlights leadership, lifecycle delivery, and metrics).
+    *   Click **Generate Cover Letter** to initiate generation using your resume and target job description context.
+    *   Edit the resulting text directly inside the form, and instantly **Copy Text** or **Export PDF** to download the letterhead printout.
 
 ---
 

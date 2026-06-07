@@ -1190,3 +1190,18 @@ a:hover {
   font-size: 11px;
   opacity: 0.8;
 }
+
+/* ---------- Workspace Switcher Tabs ---------- */
+.workspace-tab {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.workspace-tab:hover {
+  color: var(--color-text-primary) !important;
+  background-color: rgba(99, 102, 241, 0.04) !important;
+}
+
+.workspace-tab.active:hover {
+  background-color: var(--color-bg-secondary) !important;
+}
+

@@ -41,6 +41,7 @@ const initialState = {
   resumeData: defaultResume,
   sectionOrder: [...defaultSectionOrder],
   selectedTemplate: 'classic', // 'classic' | 'modern' | 'minimal' | 'ats'
+  workspaceMode: 'resume', // 'resume' | 'cover-letter'
 
   // AI settings
   settings: {
@@ -55,6 +56,14 @@ const initialState = {
     },
     tone: 'professional', // 'professional' | 'technical' | 'executive'
     compactLayout: false, // Compresses spacing to fit content on a single page
+  },
+
+  // Cover Letter data
+  coverLetter: {
+    text: '',
+    style: 'short', // 'short' | 'tech' | 'experience'
+    isGenerating: false,
+    error: null,
   },
 
   // Job description
@@ -100,6 +109,10 @@ function loadStateFromStorage() {
     // This allows the user to break out of stuck loading overlays if they refresh the page.
     parsed.isGenerating = false;
     parsed.generationError = null;
+    if (parsed.coverLetter) {
+      parsed.coverLetter.isGenerating = false;
+      parsed.coverLetter.error = null;
+    }
 
     // Merge with initialState so that any newly-added keys are present
     // even if the persisted blob predates them.
@@ -319,6 +332,70 @@ function appReducer(state, action) {
         ...state,
         isGenerating: false,
         generationError: action.payload,
+      };
+
+    // ── Workspace mode ───────────────────────────────────────────────────
+
+    case 'SET_WORKSPACE_MODE':
+      return { ...state, workspaceMode: action.payload };
+
+    // ── Cover Letter generation lifecycle ────────────────────────────────
+
+    case 'START_COVER_LETTER_GEN':
+      return {
+        ...state,
+        coverLetter: {
+          ...state.coverLetter,
+          isGenerating: true,
+          error: null,
+        },
+      };
+
+    case 'COVER_LETTER_GEN_SUCCESS':
+      return {
+        ...state,
+        coverLetter: {
+          ...state.coverLetter,
+          text: action.payload.text,
+          isGenerating: false,
+          error: null,
+        },
+        currentGeneration: action.payload.generation,
+        generationHistory: [...state.generationHistory, action.payload.generation],
+        totalTokens: {
+          input: state.totalTokens.input + (action.payload.generation.tokens?.input || 0),
+          output: state.totalTokens.output + (action.payload.generation.tokens?.output || 0),
+          total: state.totalTokens.total + (action.payload.generation.tokens?.total || 0),
+        },
+        totalCost: state.totalCost + (action.payload.generation.cost || 0),
+      };
+
+    case 'COVER_LETTER_GEN_ERROR':
+      return {
+        ...state,
+        coverLetter: {
+          ...state.coverLetter,
+          isGenerating: false,
+          error: action.payload,
+        },
+      };
+
+    case 'UPDATE_COVER_LETTER_TEXT':
+      return {
+        ...state,
+        coverLetter: {
+          ...state.coverLetter,
+          text: action.payload,
+        },
+      };
+
+    case 'SET_COVER_LETTER_STYLE':
+      return {
+        ...state,
+        coverLetter: {
+          ...state.coverLetter,
+          style: action.payload,
+        },
       };
 
     // ── UI state ─────────────────────────────────────────────────────────
