@@ -11,6 +11,7 @@
 export const defaultResume = {
   contactInfo: {
     name: 'Alex Johnson',
+    title: 'Senior Software Engineer',
     email: 'alex.johnson@email.com',
     phone: '+1 (555) 123-4567',
     location: 'San Francisco, CA',
@@ -132,6 +133,16 @@ export const defaultResume = {
       github: 'github.com/alexj/analytics',
       status: 'Completed',
     },
+    {
+      id: 'proj2',
+      name: 'OpenResumeCraft',
+      description:
+        'Developed a privacy-first AI Resume Builder and ATS Match Optimizer with real-time score auditing, deterministic keyword mapping, and PDF/Word document compilers.',
+      technologies: ['React', 'Node.js', 'Express', 'Ollama', 'OpenAI API'],
+      link: 'localhost:5173',
+      github: 'github.com/sairaghukiran14/OpenResumeCraft',
+      status: 'Completed',
+    },
   ],
 };
 
@@ -140,6 +151,7 @@ export const defaultResume = {
 export const emptyResume = {
   contactInfo: {
     name: '',
+    title: '',
     email: '',
     phone: '',
     location: '',
@@ -197,3 +209,99 @@ export function generateId(prefix = 'entry') {
   const random = Math.random().toString(36).substring(2, 6);
   return `${prefix}_${timestamp}_${random}`;
 }
+
+export const asrkResume = {
+  contactInfo: {
+    name: 'Sai Raghu Kiran Avula',
+    title: 'Software Engineer',
+    email: 'sairaghukiranavula@gmail.com',
+    phone: '+91 98765 43210',
+    location: 'Hyderabad, India',
+    linkedin: 'linkedin.com/in/sairaghukiran',
+    website: 'sairaghukiran.dev',
+  },
+  summary:
+    'Dynamic Software Engineer with a passion for web technologies and AI integrations. Proficient in React, JavaScript/TypeScript, Node.js, Express, and CSS. Experienced in building responsive interfaces, designing RESTful APIs, and implementing local & cloud-based LLM architectures.',
+  experience: [
+    {
+      id: 'asrk_exp1',
+      title: 'Software Engineer',
+      company: 'Tech Solutions',
+      location: 'Hyderabad, India',
+      startDate: 'Jun 2023',
+      endDate: 'Present',
+      bullets: [
+        'Designed and implemented React-based frontends with Tailwind CSS and modern styling architectures.',
+        'Collaborated on backend APIs utilizing Node.js, Express, and MongoDB, increasing reliability by 25%.',
+        'Built interactive dashboard modules and integrated custom visualization widgets.',
+      ],
+    },
+  ],
+  education: [
+    {
+      id: 'asrk_edu1',
+      degree: 'B.Tech in Computer Science',
+      institution: 'Jawaharlal Nehru Technological University',
+      location: 'Hyderabad, India',
+      year: '2023',
+      gpa: '8.2/10',
+    },
+  ],
+  skills: {
+    technical: [
+      'JavaScript',
+      'TypeScript',
+      'React',
+      'Node.js',
+      'Express',
+      'HTML5',
+      'CSS3',
+      'SQL',
+      'MongoDB',
+    ],
+    soft: [
+      'Technical Leadership',
+      'Problem Solving',
+      'Agile/Scrum',
+      'Collaboration',
+    ],
+    tools: [
+      'VS Code',
+      'Git',
+      'GitHub',
+      'Postman',
+      'Vite',
+      'Docker',
+    ],
+  },
+  certifications: [
+    {
+      id: 'asrk_cert1',
+      name: 'Full Stack Web Development',
+      issuer: 'Udemy',
+      year: '2023',
+    },
+  ],
+  projects: [
+    {
+      id: 'asrk_proj1',
+      name: 'OpenResumeCraft',
+      description:
+        'Developed a privacy-first AI Resume Builder and ATS Match Optimizer with real-time score auditing, deterministic keyword mapping, and PDF/Word document compilers.',
+      technologies: ['React', 'Node.js', 'Express', 'Ollama', 'OpenAI API'],
+      link: 'localhost:5173',
+      github: 'github.com/sairaghukiran14/OpenResumeCraft',
+      status: 'Completed',
+    },
+    {
+      id: 'asrk_proj2',
+      name: 'HasaBoard',
+      description:
+        'Designed and built a modern, highly interactive Kanban task board project featuring glassmorphism elements and rich states.',
+      technologies: ['React', 'TailwindCSS', 'DnD-Kit', 'LocalStorage'],
+      link: 'localhost:5174',
+      github: 'github.com/sairaghukiran14/HasaBoard',
+      status: 'In Progress',
+    },
+  ],
+};

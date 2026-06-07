@@ -1,6 +1,12 @@
 import { saveAs } from 'file-saver';
 
-// Helper to escape LaTeX special characters
+/**
+ * Escapes special characters reserved by the LaTeX markup engine to prevent
+ * document compilation errors (e.g., escaping '&', '%', '$', etc.).
+ *
+ * @param {string} text - Raw input string containing user text.
+ * @returns {string} The safely escaped LaTeX character string.
+ */
 function escapeLatex(text) {
   if (!text) return '';
   return String(text)
@@ -16,6 +22,20 @@ function escapeLatex(text) {
     .replace(/\^/g, '\\textasciicircum{}');
 }
 
+/**
+ * Generates a professionally typeset LaTeX `.tex` file from the structured resume state.
+ * Implements standard industry LaTeX structures:
+ *   - Utilizes `geometry` to set optimal margins.
+ *   - Employs `enumitem` and `titlesec` to produce structured sections, bullets, and headings.
+ *   - Automatically maps all sections (summary, experience, education, skills, projects, certifications).
+ *   - Escapes special inputs using `escapeLatex` to avoid build crashes.
+ *   - Compiles output into a browser file Blob stream using `file-saver`.
+ *
+ * @param {object} resumeData - The current structured resume data model.
+ * @param {string} [filename='resume'] - The target output file name.
+ * @returns {void} Saves the file directly to the client's local disk.
+ * @throws {Error} If resumeData is null or undefined.
+ */
 export function exportToLatex(resumeData, filename = 'resume') {
   if (!resumeData) throw new Error('Resume data is required');
 

@@ -80,25 +80,44 @@ export const PROVIDERS = {
   },
 };
 
-// ─── Helpers ──────────────────────────────────────────────────────────
-
-/** Get all providers */
+/**
+ * Returns the entire static registry of third-party and local AI providers.
+ *
+ * @returns {object} The full PROVIDERS config object map.
+ */
 export function getProviders() {
   return PROVIDERS;
 }
 
-/** Get provider by ID */
+/**
+ * Retrieves the configuration metadata of a specific AI provider.
+ *
+ * @param {string} providerId - The provider's key (e.g., 'openai', 'gemini').
+ * @returns {object|null} The provider configuration object, or null if not found.
+ */
 export function getProvider(providerId) {
   return PROVIDERS[providerId] || null;
 }
 
-/** Get models for a provider */
+/**
+ * Returns all configured active models associated with a specific provider.
+ *
+ * @param {string} providerId - The provider's key (e.g., 'anthropic', 'deepseek').
+ * @returns {Array<object>} List of model configuration objects (containing pricing and features).
+ */
 export function getModels(providerId) {
   const provider = PROVIDERS[providerId];
   return provider ? provider.models : [];
 }
 
-/** Get a specific model */
+/**
+ * Retrieves the specifications for a given model under a specific provider.
+ * Handles dynamic model creation for the local 'ollama' provider to support custom client models.
+ *
+ * @param {string} providerId - Provider identifier (e.g., 'openai').
+ * @param {string} modelId - Model identifier (e.g., 'gpt-4o-mini').
+ * @returns {object|null} The model definition containing descriptions and prices, or null.
+ */
 export function getModel(providerId, modelId) {
   const models = getModels(providerId);
   const found = models.find(m => m.id === modelId);
@@ -108,7 +127,16 @@ export function getModel(providerId, modelId) {
   return found || null;
 }
 
-/** Calculate cost from token counts */
+/**
+ * Calculates the exact token transaction cost in USD based on input and output token counts.
+ * Uses provider-specific model pricing parameters (quoted per 1,000,000 tokens).
+ *
+ * @param {string} providerId - The provider identifier.
+ * @param {string} modelId - The model identifier.
+ * @param {number} inputTokens - Prompt token count.
+ * @param {number} outputTokens - Completion token count.
+ * @returns {number} The calculated transaction cost in USD (floating point).
+ */
 export function calculateCost(providerId, modelId, inputTokens, outputTokens) {
   const model = getModel(providerId, modelId);
   if (!model) return 0;
@@ -117,7 +145,13 @@ export function calculateCost(providerId, modelId, inputTokens, outputTokens) {
   return inputCost + outputCost;
 }
 
-/** Format cost as string */
+/**
+ * Formats a USD floating point cost into a beautiful, human-readable string representation.
+ * Dynamically adjusts decimal precision depending on the cost magnitude.
+ *
+ * @param {number} cost - The numerical transaction cost in USD.
+ * @returns {string} The formatted currency string (e.g., '$0.0024' or '$1.50').
+ */
 export function formatCost(cost) {
   if (cost < 0.001) return `$${cost.toFixed(6)}`;
   if (cost < 0.01) return `$${cost.toFixed(5)}`;
@@ -125,7 +159,12 @@ export function formatCost(cost) {
   return `$${cost.toFixed(3)}`;
 }
 
-/** Format token count with commas */
+/**
+ * Formats a raw integer token count with thousands-separator commas.
+ *
+ * @param {number} count - The raw number of tokens.
+ * @returns {string} The formatted locale string (e.g., "15,230").
+ */
 export function formatTokens(count) {
   return count.toLocaleString('en-US');
 }

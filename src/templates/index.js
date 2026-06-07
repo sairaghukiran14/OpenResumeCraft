@@ -11,6 +11,13 @@ import ModernTemplate from './ModernTemplate';
 import MinimalTemplate from './MinimalTemplate';
 import AtsTemplate from './AtsTemplate';
 
+/**
+ * Central Template Registry.
+ * Central exports that associate each layout design ID ('classic', 'modern', 'minimal', 'ats')
+ * with its concrete React component, meta tags, and description fields.
+ *
+ * @type {object}
+ */
 export const templates = {
   classic: {
     name: 'Classic',

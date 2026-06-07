@@ -13,13 +13,11 @@
 import React from 'react';
 import './TemplateStyles.css';
 
+import { formatSingleDate } from '../utils/dateFormatter';
+
 /* ── Helpers ───────────────────────────────────────────────────────── */
 const formatDate = (dateStr) => {
-  if (!dateStr) return '';
-  if (/[a-zA-Z]/.test(dateStr)) return dateStr;
-  const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return dateStr;
-  return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  return formatSingleDate(dateStr);
 };
 
 const dateRange = (start, end, current) => {
@@ -237,9 +235,19 @@ const ProjectsSection = ({ projects }) => {
                 : proj.technologies}
             </div>
           )}
-          {proj.description && (
-            <p className="ats-project-description">{proj.description}</p>
-          )}
+          {proj.description && (() => {
+            const bullets = proj.description.split(/[\n•*]+/).map(b => b.trim()).filter(Boolean);
+            if (bullets.length <= 1) {
+              return <p className="ats-project-description">{proj.description}</p>;
+            }
+            return (
+              <ul className="ats-project-bullets" style={{ margin: '4px 0 0 0', paddingLeft: '16px' }}>
+                {bullets.map((b, idx) => (
+                  <li key={idx}>{b}</li>
+                ))}
+              </ul>
+            );
+          })()}
           {proj.highlights && proj.highlights.length > 0 && (
             <ul className="ats-project-bullets">
               {proj.highlights.map((h, j) => (
@@ -318,7 +326,23 @@ const renderSection = (sectionId, resumeData) => {
   }
 };
 
-/* ── Main Component ────────────────────────────────────────────────── */
+/**
+ * AtsTemplate Component.
+ * ----------------------
+ * Renders the ATS-Optimized resume template.
+ *
+ * Design Constraints:
+ *   - Enforces a standard sans-serif Arial grid with strictly selectable plain-text inputs.
+ *   - Zero tables, multi-column divisions, color panels, or graphical dividers to guarantee
+ *     flawless parsability across standard Applicant Tracking Systems.
+ *   - Clear, clean outlines matching standard plain document standards.
+ *
+ * @param {object} props - Component properties.
+ *   - resumeData {object}: Normalized candidate data map.
+ *   - sectionOrder {Array<string>}: Array defining custom section visual priorities.
+ *   - settings {object}: Canvas parameters like compact spacing.
+ * @returns {React.ReactElement} The rendered ATS sheet element.
+ */
 const AtsTemplate = ({ resumeData = {}, sectionOrder = [], settings = {} }) => {
   const { personalInfo = {} } = resumeData;
 

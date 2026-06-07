@@ -13,13 +13,11 @@
 import React from 'react';
 import './TemplateStyles.css';
 
+import { formatSingleDate } from '../utils/dateFormatter';
+
 /* ── Helpers ───────────────────────────────────────────────────────── */
 const formatDate = (dateStr) => {
-  if (!dateStr) return '';
-  if (/[a-zA-Z]/.test(dateStr)) return dateStr;
-  const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return dateStr;
-  return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  return formatSingleDate(dateStr);
 };
 
 const dateRange = (start, end, current) => {
@@ -236,9 +234,19 @@ const ProjectsSection = ({ projects }) => {
                 : proj.technologies}
             </div>
           )}
-          {proj.description && (
-            <p className="minimal-project-description">{proj.description}</p>
-          )}
+          {proj.description && (() => {
+            const bullets = proj.description.split(/[\n•*]+/).map(b => b.trim()).filter(Boolean);
+            if (bullets.length <= 1) {
+              return <p className="minimal-project-description">{proj.description}</p>;
+            }
+            return (
+              <ul className="minimal-bullets" style={{ margin: '4px 0 0 0', paddingLeft: '16px' }}>
+                {bullets.map((b, idx) => (
+                  <li key={idx}>{b}</li>
+                ))}
+              </ul>
+            );
+          })()}
           {proj.highlights && proj.highlights.length > 0 && (
             <ul className="minimal-bullets">
               {proj.highlights.map((h, j) => (
@@ -317,7 +325,23 @@ const renderSection = (sectionId, resumeData) => {
   }
 };
 
-/* ── Main Component ────────────────────────────────────────────────── */
+/**
+ * MinimalTemplate Component.
+ * --------------------------
+ * Renders the Minimal resume template.
+ *
+ * Design Characteristics:
+ *   - Elegant asymmetric typography splits (large left names, clear right subtitles).
+ *   - Clean, whitespace-focused layout.
+ *   - Completely borderless dividers, utilizing spacious margins to create separation.
+ *   - Ideal for creative professionals, startup roles, and design engineers.
+ *
+ * @param {object} props - Component properties.
+ *   - resumeData {object}: Normalized candidate data map.
+ *   - sectionOrder {Array<string>}: Array defining custom section visual priorities.
+ *   - settings {object}: Canvas parameters like compact spacing.
+ * @returns {React.ReactElement} The rendered Minimal sheet element.
+ */
 const MinimalTemplate = ({ resumeData = {}, sectionOrder = [], settings = {} }) => {
   const { personalInfo = {} } = resumeData;
 

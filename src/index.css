@@ -783,6 +783,107 @@ a:hover {
   flex: 1;
 }
 
+.bullet-warning-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+  color: var(--color-warning);
+  cursor: help;
+}
+
+.bullet-warning-icon {
+  stroke-width: 2.5;
+  animation: pulse-warning 2s infinite ease-in-out;
+}
+
+@keyframes pulse-warning {
+  0%, 100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+.bullet-warning-tooltip {
+  visibility: hidden;
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  background-color: var(--color-text-primary);
+  color: var(--color-text-inverse);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  width: 320px;
+  line-height: var(--leading-relaxed);
+  box-shadow: var(--shadow-xl);
+  z-index: var(--z-tooltip);
+  opacity: 0;
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  pointer-events: none;
+}
+
+/* Allow hovering and clicking within tooltip */
+.bullet-warning-container:hover .bullet-warning-tooltip,
+.bullet-warning-tooltip:hover {
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(-4px);
+  pointer-events: auto;
+}
+
+/* Hover bridge to keep tooltip open when moving mouse from warning icon to tooltip */
+.bullet-warning-tooltip::before {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  height: 12px;
+  background: transparent;
+}
+
+.bullet-warning-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  right: 8px; /* Align arrow to be exactly under the warning icon on the right edge */
+  border-width: 5px;
+  border-style: solid;
+  border-color: var(--color-text-primary) transparent transparent transparent;
+}
+
+.bullet-suggestions-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.bullet-suggestion-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--color-text-inverse);
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: 10.5px;
+  cursor: pointer;
+  line-height: 1.4;
+  transition: background var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.bullet-suggestion-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: translateX(2px);
+}
+
 /* Skills Tags */
 .skills-tags {
   display: flex;

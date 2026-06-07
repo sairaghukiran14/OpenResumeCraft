@@ -13,10 +13,31 @@ import {
 } from 'docx';
 import { saveAs } from 'file-saver';
 
-// Helper to sanitize text for word documents
+/**
+ * Sanitizes input values to prevent null/undefined strings in the Word file.
+ * Returns a trimmed string or empty string.
+ *
+ * @param {any} val - Raw input.
+ * @returns {string} Cleaned trimmed string.
+ */
 const clean = (val) => (val ? String(val).trim() : '');
 
-// Safe helper to create a 2-column borderless table row for left-right alignment
+/**
+ * Constructs a two-column borderless table row in DOCX.
+ * Used for aligning resume metrics (e.g. Job Title on the left, Date Range on the right)
+ * without utilizing tab-stop coordinates which can easily corrupt Word document files.
+ *
+ * @param {string} leftText - Text aligned to the left column.
+ * @param {string} rightText - Text aligned to the right column.
+ * @param {boolean} [isBoldLeft=false] - Toggle bold text in left column.
+ * @param {boolean} [isBoldRight=false] - Toggle bold text in right column.
+ * @param {boolean} [isItalicLeft=false] - Toggle italic text in left column.
+ * @param {boolean} [isItalicRight=false] - Toggle italic text in right column.
+ * @param {string} [leftColor='111111'] - Text color for left column.
+ * @param {string} [rightColor='111111'] - Text color for right column.
+ * @param {number} [beforeSpace=120] - Top spacing padding in DXA units (twips).
+ * @returns {Table} The configured DOCX table layout object.
+ */
 const createTwoColumnRow = (leftText, rightText, isBoldLeft = false, isBoldRight = false, isItalicLeft = false, isItalicRight = false, leftColor = '111111', rightColor = '111111', beforeSpace = 120) => {
   return new Table({
     columnWidths: [7056, 3024],
@@ -78,6 +99,22 @@ const createTwoColumnRow = (leftText, rightText, isBoldLeft = false, isBoldRight
   });
 };
 
+/**
+ * Compiles and exports a professional Microsoft Word `.docx` document from the resume data.
+ * Enforces highly structured layouts using borderless tables for side-by-side alignment.
+ * 
+ * Features:
+ *   - Supports a "compactLayout" toggle that adjusts font sizing and margins dynamically.
+ *   - Auto-adds bottom section borders in exact Word XML formats.
+ *   - Automatically cleans all entries to guard against DOCX schema-level build errors.
+ *   - Packages XML streams into a binary Blob via Packer and saves it directly to local disk.
+ *
+ * @param {object} resumeData - Current structured resume state.
+ * @param {string} [filename='resume'] - Output document filename.
+ * @param {object} [settings={}] - Custom spacing configurations (e.g. compactLayout toggle).
+ * @returns {Promise<void>} Resolves when packer triggers file download.
+ * @throws {Error} If resumeData is null or invalid.
+ */
 export async function exportToWord(resumeData, filename = 'resume', settings = {}) {
   if (!resumeData) throw new Error('Resume data is required');
 

@@ -3,6 +3,19 @@ import { useApp } from '../../context/AppContext';
 import { formatCost, formatTokens } from '../../services/aiProviders';
 import { Coins, Sparkles, TrendingDown } from 'lucide-react';
 
+/**
+ * TokenTracker Component.
+ * ----------------------
+ * Renders the session-level and generation-level AI token usage and estimated pricing metrics dashboard.
+ *
+ * Visual Features:
+ *   - Implements a smooth animation loop using browser `requestAnimationFrame` and an
+ *     ease-out quadratic interpolation curve to animate numerical counters when a new resume is tailored.
+ *   - Renders input/output split token statistics with custom HSL-colored badge panels.
+ *   - Displays cumulative total session token weights and cost accumulations.
+ *
+ * @returns {React.ReactElement} The rendered Token Dashboard container.
+ */
 export default function TokenTracker() {
   const { state } = useApp();
   const { currentGeneration, totalTokens, totalCost } = state;
@@ -10,7 +23,8 @@ export default function TokenTracker() {
   const [animatedTokens, setAnimatedTokens] = useState({ input: 0, output: 0, total: 0 });
   const [animatedCost, setAnimatedCost] = useState(0);
 
-  // Smooth animation for counter numbers
+  // Smooth animation for counter numbers using quadratic ease-out interpolation
+  // Runs automatically whenever a new AI generation is loaded into state.currentGeneration.
   useEffect(() => {
     if (!currentGeneration) return;
     

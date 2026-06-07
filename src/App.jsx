@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { parseAIResponse } from './services/promptEngine';
+import { asrkResume } from './data/defaultResume';
 
 export default function App() {
   const { state, dispatch } = useApp();
@@ -32,6 +33,16 @@ export default function App() {
   const [isParsing, setIsParsing] = useState(false);
   const [parseError, setParseError] = useState(null);
 
+  /**
+   * Handles user file uploads for raw resume parsing.
+   * Supports:
+   *   - PDF (.pdf) and Word (.docx): Uploads raw binary streams to `/api/extract-text` for server-side extraction.
+   *   - JSON (.json): Decodes locally, structures, and immediately hydryates the editor state.
+   *   - Text (.txt): Reads plain text locally in the browser and updates the importText area.
+   *
+   * @param {React.ChangeEvent<HTMLInputElement>} e - The change event from the file input element.
+   * @returns {Promise<void>}
+   */
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -118,6 +129,14 @@ export default function App() {
     reader.readAsText(file);
   };
 
+  /**
+   * Dispatches the raw pasted/extracted resume text to `/api/parse-resume`.
+   * Enforces the current AI provider settings, handles HTTP status outputs,
+   * validates structured JSON output schema matching expectations,
+   * and hydrates the global application state upon success.
+   *
+   * @returns {Promise<void>}
+   */
   const handleImportWithAI = async () => {
     if (!importText || importText.trim() === '') {
       setParseError('Please paste your resume text or upload a file first.');
@@ -188,12 +207,22 @@ export default function App() {
     }
   };
 
-  // Dragging Mouse Event Listeners
+  /**
+   * Activates split-pane mouse drag resizing.
+   * Prevents browser text selections during active dragging motions.
+   *
+   * @param {React.MouseEvent} e - The mouse down event.
+   */
   const handleMouseDown = (e) => {
     e.preventDefault();
     setIsDragging(true);
   };
 
+  /**
+   * Dynamically tracks mouse movement across the viewport while dragging the divider handle.
+   * Updates `leftWidth` as a percentage of the total window width.
+   * Constrains pane width split limits between 25% and 75% to prevent complete pane collapse.
+   */
   useEffect(() => {
     if (!isDragging) return;
 
@@ -221,16 +250,27 @@ export default function App() {
     };
   }, [isDragging]);
 
+  /**
+   * Toggles the left-hand AI configuration sidebar state.
+   */
   const toggleSidebar = () => {
     dispatch({ type: 'TOGGLE_SIDEBAR' });
   };
 
+  /**
+   * Prompts the user for confirmation and resets editing state
+   * to default pre-populated resume values.
+   */
   const handleResetResume = () => {
     if (window.confirm('Are you sure you want to reset your resume to the default Software Engineer template? This will discard your current edits.')) {
       dispatch({ type: 'RESET_RESUME' });
     }
   };
 
+  /**
+   * Prompts the user for confirmation and clears out every block of resume data,
+   * providing an entirely blank slate.
+   */
   const handleClearResume = () => {
     if (window.confirm('Are you sure you want to clear all fields? This will start a completely blank resume.')) {
       dispatch({ type: 'CLEAR_RESUME' });
@@ -239,6 +279,27 @@ export default function App() {
 
   const setActivePanel = (panelId) => {
     dispatch({ type: 'SET_ACTIVE_PANEL', payload: panelId });
+  };
+
+  const handleLoadASRKResume = () => {
+    const customAsrk = localStorage.getItem('openresumecraft_asrk_resume');
+    if (customAsrk) {
+      try {
+        const parsed = JSON.parse(customAsrk);
+        dispatch({ type: 'SET_RESUME_DATA', payload: parsed });
+        toast.success("Loaded Sai Raghu Kiran's customized resume data!");
+        return;
+      } catch (e) {
+        console.error("Failed to parse custom ASRK resume, loading default instead.");
+      }
+    }
+    dispatch({ type: 'SET_RESUME_DATA', payload: asrkResume });
+    toast.success("Loaded Sai Raghu Kiran's default resume data!");
+  };
+
+  const handleSaveASRKResume = () => {
+    localStorage.setItem('openresumecraft_asrk_resume', JSON.stringify(state.resumeData));
+    toast.success("Successfully saved current data as Sai Raghu Kiran's profile!");
   };
 
   return (
@@ -265,6 +326,32 @@ export default function App() {
         {/* Action Controls */}
         <div className="app-header-right" style={{ display: 'flex', gap: 'var(--space-2)' }}>
           
+          <button
+            onClick={handleLoadASRKResume}
+            className="btn btn-secondary btn-sm"
+            style={{ 
+              fontWeight: '600', 
+              borderColor: 'var(--color-accent-violet-dark)', 
+              color: 'var(--color-accent-violet-dark)' 
+            }}
+            title="Load Sai Raghu Kiran's Resume Data"
+          >
+            <span>ASRK</span>
+          </button>
+
+          <button
+            onClick={handleSaveASRKResume}
+            className="btn btn-secondary btn-sm"
+            style={{ 
+              fontWeight: '600', 
+              borderColor: 'var(--color-accent-violet-dark)', 
+              color: 'var(--color-accent-violet-dark)' 
+            }}
+            title="Save current resume as Sai Raghu Kiran's profile"
+          >
+            <span>Save for ASRK</span>
+          </button>
+
           <button
             onClick={() => setShowImportModal(true)}
             className="btn btn-primary btn-sm"

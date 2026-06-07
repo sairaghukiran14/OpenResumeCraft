@@ -79,8 +79,15 @@ const initialState = {
 // ─── localStorage helpers ────────────────────────────────────────────────────
 
 /**
- * Safely load persisted state from localStorage.
- * Returns `null` when nothing is stored or data is corrupt.
+ * Safely loads the persisted state from browser localStorage.
+ * 
+ * Includes circular logic checks and fail-safes. Specifically, it forces the loading state 
+ * (`isGenerating`) and error state (`generationError`) to reset to default falsy values.
+ * This guarantees the user is never locked out of interactive UI elements (like progress screens 
+ * or overlays) if a connection dies mid-flight and they refresh their browser.
+ *
+ * @returns {object|null} The parsed application state deep-merged with initial state values, 
+ *                        or null if no state exists or parsing fails.
  */
 function loadStateFromStorage() {
   try {
@@ -104,8 +111,12 @@ function loadStateFromStorage() {
 }
 
 /**
- * Persist state to localStorage.
- * Silently catches quota / serialization errors.
+ * Persists the application state slice into browser localStorage as a serialized JSON string.
+ * Catches quota and serialization errors silently to prevent app crashes when 
+ * storage runs out.
+ *
+ * @param {object} state - The full application state object to serialize and save.
+ * @returns {void}
  */
 function saveStateToStorage(state) {
   try {
@@ -116,8 +127,14 @@ function saveStateToStorage(state) {
 }
 
 /**
- * Deep-merge `source` into `target`.
- * Arrays are replaced wholesale (not concatenated).
+ * Deep-merges a source object into a target object recursively.
+ * Unlike simple shallow object spread operations, it drills down into nested sub-objects
+ * (such as state.settings.apiKeys) ensuring old settings are not deleted when new settings
+ * properties are introduced. Arrays are replaced wholesale rather than merged.
+ *
+ * @param {object} target - The destination object receiving new configurations.
+ * @param {object} source - The incoming object containing updated user properties.
+ * @returns {object} A brand new deep-merged object containing parameters from both inputs.
  */
 function deepMerge(target, source) {
   const output = { ...target };
@@ -142,6 +159,22 @@ function deepMerge(target, source) {
 
 // ─── Reducer ─────────────────────────────────────────────────────────────────
 
+/**
+ * Application State Reducer.
+ * Enforces predictable state transitions for OpenResumeCraft.
+ * 
+ * Supports the following action types:
+ *   - Resume data edits (`SET_RESUME_DATA`, `UPDATE_SECTION`, `ADD_ENTRY`, `REMOVE_ENTRY`, `UPDATE_ENTRY`)
+ *   - Layout structure ordering (`REORDER_SECTIONS`)
+ *   - AI system configurations (`SET_SETTINGS`, `SET_API_KEY`, `SET_JOB_DESCRIPTION`, `SET_TEMPLATE`)
+ *   - AI network lifecycle loops (`START_GENERATION`, `GENERATION_SUCCESS`, `GENERATION_ERROR`)
+ *   - View toggles (`SET_ACTIVE_PANEL`, `TOGGLE_SIDEBAR`, `TOGGLE_DARK_MODE`)
+ *   - Bulk modifications (`RESET_RESUME`, `CLEAR_RESUME`, `LOAD_STATE`)
+ *
+ * @param {object} state - The current active state.
+ * @param {object} action - The dispatched action object containing `type` and optional `payload`.
+ * @returns {object} The newly computed state object.
+ */
 function appReducer(state, action) {
   switch (action.type) {
     // ── Resume data ──────────────────────────────────────────────────────

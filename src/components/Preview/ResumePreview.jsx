@@ -13,18 +13,32 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-// Decoupled Mapper function to map App state format perfectly into what Templates expect!
+/**
+ * Decoupled State Mapper Utility.
+ * ------------------------------
+ * Normalizes the global application state schema into a clean data model expected by 
+ * the individual visual layout templates.
+ * 
+ * Specifically:
+ *   - Extracts the candidate's latest work title to populate the primary header subtitle.
+ *   - Maps arrays of experience bullets and project parameters into consistent lists.
+ *   - Categorizes skills arrays (technical, soft, tools) into structured array objects.
+ *   - Normalizes certification date stamps.
+ *
+ * @param {object} resumeData - Structured global resume state data.
+ * @returns {object} Normalized data payload ready for template renders.
+ */
 const mapResumeDataForTemplate = (resumeData) => {
   if (!resumeData) return {};
   
-  // Primary subtitle: use current/latest job title if available
-  const latestJobTitle = resumeData.experience?.[0]?.title || '';
+  // Primary subtitle: use target title from contact info
+  const targetTitle = resumeData.contactInfo?.title || '';
 
   return {
     ...resumeData,
     personalInfo: {
       ...resumeData.contactInfo,
-      title: latestJobTitle
+      title: targetTitle
     },
     experience: (resumeData.experience || []).map(exp => ({
       ...exp,
@@ -46,6 +60,18 @@ const mapResumeDataForTemplate = (resumeData) => {
   };
 };
 
+/**
+ * ResumePreview Component.
+ * ------------------------
+ * The core visual canvas representing the tailored paper document sheet.
+ *
+ * Mechanics & Features:
+ *   1. Dynamic Template Router: Hot-swaps typography scale classes, grids, and themes dynamically based on select-dropdown states.
+ *   2. Direct WYSIWYG Inline Editor: Allows users to click anywhere on the document canvas, edit text directly using HTML contentEditable properties, and save changes locally.
+ *   3. Exporters Integration: Links to LaTeX, Word, and PDF download engines, passing sanitized DOM structures.
+ *
+ * @returns {React.ReactElement} The rendered preview pane.
+ */
 export default function ResumePreview() {
   const { state, dispatch } = useApp();
   const { resumeData, sectionOrder, selectedTemplate } = state;

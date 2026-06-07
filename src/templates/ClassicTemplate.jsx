@@ -12,15 +12,11 @@
 import React from 'react';
 import './TemplateStyles.css';
 
+import { formatSingleDate } from '../utils/dateFormatter';
+
 /* ── helper: format a date string for display ──────────────────────── */
 const formatDate = (dateStr) => {
-  if (!dateStr) return '';
-  // If it's already a readable string like "Jan 2023", return as-is
-  if (/[a-zA-Z]/.test(dateStr)) return dateStr;
-  // Try to parse ISO-style dates
-  const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return dateStr;
-  return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  return formatSingleDate(dateStr);
 };
 
 /* ── helper: build a date range string ─────────────────────────────── */
@@ -239,9 +235,19 @@ const ProjectsSection = ({ projects }) => {
                 : proj.technologies}
             </div>
           )}
-          {proj.description && (
-            <p className="classic-project-description">{proj.description}</p>
-          )}
+          {proj.description && (() => {
+            const bullets = proj.description.split(/[\n•*]+/).map(b => b.trim()).filter(Boolean);
+            if (bullets.length <= 1) {
+              return <p className="classic-project-description">{proj.description}</p>;
+            }
+            return (
+              <ul className="classic-bullets" style={{ margin: '4px 0 0 0', paddingLeft: '16px' }}>
+                {bullets.map((b, idx) => (
+                  <li key={idx}>{b}</li>
+                ))}
+              </ul>
+            );
+          })()}
           {proj.highlights && proj.highlights.length > 0 && (
             <ul className="classic-bullets">
               {proj.highlights.map((h, j) => (
@@ -320,7 +326,22 @@ const renderSection = (sectionId, resumeData) => {
   }
 };
 
-/* ── Main Component ────────────────────────────────────────────────── */
+/**
+ * ClassicTemplate Component.
+ * --------------------------
+ * Renders the Classic resume template.
+ *
+ * Design Characteristics:
+ *   - Balanced, centralized top header block.
+ *   - Traditional, clean single-column structure with subtle top section underlines.
+ *   - Serifs or clean sans-serif typography scales suitable for traditional fields (Finance, Legal, Ops).
+ *
+ * @param {object} props - Component properties.
+ *   - resumeData {object}: Normalized candidate data map.
+ *   - sectionOrder {Array<string>}: Array defining custom section visual priorities.
+ *   - settings {object}: Canvas parameters like compact spacing.
+ * @returns {React.ReactElement} The rendered Classic sheet element.
+ */
 const ClassicTemplate = ({ resumeData = {}, sectionOrder = [], settings = {} }) => {
   const { personalInfo = {} } = resumeData;
 

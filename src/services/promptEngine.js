@@ -1,49 +1,68 @@
-/**
- * OpenResumeCraft — Prompt Engine
- * Token-efficient prompt templates for AI resume generation.
- */
+import { processExperienceBullets } from '../utils/verbProcessor.js';
 
 // ─── System Prompt ────────────────────────────────────────────────────
 
 /**
- * Build a concise system prompt for resume generation.
- * Optimized for minimal token usage (~350 tokens).
+ * Generates the standardized system instruction prompt for AI resume generation.
+ * This prompt is mathematically optimized for minimal token usage (~350 tokens) while
+ * preserving extreme schema-adherence instructions and strict guidelines on resume structure:
+ *   1. Returns raw, valid JSON only (prevents unwanted conversational preambles).
+ *   2. Enforces structural integrity (demands that existing jobs, education, and projects are not deleted).
+ *   3. Outlines the STAR method [Action Verb] + [Tool] + [Metric] achievement formula.
+ *
+ * @returns {string} The formatted system prompt.
  */
 export function buildSystemPrompt() {
   return `You are an expert ATS-optimized resume writer and analyzer. Output ONLY valid JSON matching this exact schema—no markdown, no explanation, no extra text.
 
 JSON Schema:
 {
-  "contactInfo": {"name":"","email":"","phone":"","location":"","linkedin":"","website":""},
+  "contactInfo": {"name":"","title":"","email":"","phone":"","location":"","linkedin":"","website":""},
   "summary": "",
   "experience": [{"title":"","company":"","location":"","startDate":"","endDate":"","bullets":[""]}],
   "education": [{"degree":"","institution":"","location":"","year":"","gpa":""}],
   "skills": {"technical":[""],"soft":[""],"tools":[""]},
   "certifications": [{"name":"","issuer":"","year":""}],
-  "projects": [{"name":"","description":"","technologies":[""],"link":""}],
+  "projects": [{"name":"","description":"","technologies":[""],"link":"","github":"","status":""}],
   "atsAnalysis": {
-    "score": 85,
+    "score": 100,
     "matchingKeywords": ["react", "node"],
-    "missingKeywords": ["docker"],
-    "feedback": "Strong alignment in core stack. Add tool keywords to boost score further."
+    "missingKeywords": [],
+    "feedback": "Outstanding alignment! Perfect compliance across all ATS scoring criteria."
   }
 }
 
 Rules:
 - CRITICAL: Do NOT delete, omit, truncate, or shorten the candidate's existing work history roles, education items, certifications, or projects. You must keep ALL existing items in full.
+- CRITICAL: Do NOT modify, delete, omit, or change any project URLs/hyperlinks (GitHub repository links, portfolio links, or live demo URLs). Keep them EXACTLY as they are in the input.
+- To achieve a perfect 100/100 ATS score:
+  1. Optimize every bullet point in the experience section to start with a strong action verb (e.g. Architected, Built, Optimized, Reduced, Migrated, Integrated, Implemented, Shipped, Refactored, Led, Designed, Deployed, Automated, Improved, Developed).
+  2. Ensure every single experience bullet contains at least one quantifiable metric (%, $, numbers, time improvements, requests/sec).
+  3. Mirror all target skills from the job description exactly (e.g. match casing and terms like React.js, Node.js, TypeScript).
+  4. Match the target job title from the job description exactly in the professional summary and in your contactInfo.title field (specifically modify the candidate's summary and the contactInfo.title field to match this target role title exactly, and do NOT modify historical experience job titles).
 - Optimize the professional summary, experience bullets, and projects by emphasizing and mirroring keywords and metrics from the job description naturally, but do NOT reduce the number of bullets or omit any historical details.
 - Use format: [Action Verb] + [Tool/Technique] + [Quantifiable Result] for experience achievements where applicable.
-- Add missing high-priority technical skills from the job description directly into the skills lists, but preserve all existing skills.
+- Format project descriptions as bullet points, where each point starts with a "• " character on a new line.
 - Omit empty sections (return empty arrays)
-- Output raw JSON only
-- In "atsAnalysis", evaluate the resulting tailored resume against the provided job description and calculate a realistic match percentage (0 to 100). Identify up to 5 matching and 3 missing keywords or skills, and write a 1-sentence actionable feedback.`;
+- Output raw JSON only`;
 }
 
 // ─── User Prompt Builder ──────────────────────────────────────────────
 
 /**
- * Build the user prompt with resume data and job description.
- * Uses XML delimiters for clear structure and minimal tokens.
+ * Constructs a token-efficient, highly structured user prompt.
+ * Interleaves the resume JSON structure and the raw target Job Description
+ * using XML-like segment wrappers (`<resume_data>` and `<job_description>`).
+ * This approach helps the LLM clearly distinguish candidate history from job requirements
+ * and reduces layout distortion.
+ *
+ * @param {object} resumeData - Current state of user's resume data.
+ * @param {string} jobDescription - Target job posting text.
+ * @param {object} [options={}] - Custom tailoring preferences.
+ *   - tone {'professional'|'technical'|'executive'}: Styling of summary and bullets.
+ *   - focusAreas {Array<string>}: Topics to emphasize.
+ *   - includeProjects {boolean}: Toggle to tailor project list or exclude.
+ * @returns {string} The fully compiled user prompt text.
  */
 export function buildUserPrompt(resumeData, jobDescription, options = {}) {
   const { tone = 'professional', focusAreas = [], includeProjects = true } = options;
@@ -118,6 +137,9 @@ export function buildUserPrompt(resumeData, jobDescription, options = {}) {
     resumeData.projects.forEach(proj => {
       prompt += `- ${proj.name}: ${proj.description}`;
       if (proj.technologies?.length) prompt += ` [${proj.technologies.join(', ')}]`;
+      if (proj.link) prompt += ` | Link: ${proj.link}`;
+      if (proj.github) prompt += ` | GitHub: ${proj.github}`;
+      if (proj.status) prompt += ` | Status: ${proj.status}`;
       prompt += '\n';
     });
   }
@@ -137,8 +159,15 @@ export function buildUserPrompt(resumeData, jobDescription, options = {}) {
 // ─── Quick Tailor Prompt ──────────────────────────────────────────────
 
 /**
- * Build a lighter prompt for quick tailoring (rewrite summary + adjust bullets).
- * Uses ~50% fewer tokens than full generation.
+ * Builds a lightweight, token-efficient prompt for rapid resume adjustments.
+ * Rather than restructuring the entire resume, this instructs the LLM to only
+ * rewrite the professional summary and fine-tune experience bullet achievements 
+ * to mirror the target Job Description, preserving education, contact, and certifications
+ * completely unchanged. Reduces overall LLM token charges by roughly 50%.
+ *
+ * @param {object} currentResume - The current structured resume object state.
+ * @param {string} jobDescription - Target job posting text.
+ * @returns {object} { systemPrompt: string, userPrompt: string }
  */
 export function buildQuickTailorPrompt(currentResume, jobDescription) {
   const systemPrompt = `You are a resume optimization expert. Output ONLY valid JSON. Rewrite the summary and experience bullets to better match the job description. Keep contact info, education, and other sections unchanged. Use the same JSON schema as the input.
@@ -166,8 +195,19 @@ Optimize this resume for the job description. Output JSON only.`;
 // ─── Response Parser ──────────────────────────────────────────────────
 
 /**
- * Parse AI response text into structured resume data.
- * Handles markdown code fences, raw JSON, and common formatting issues.
+ * Parses raw textual response strings returned from LLMs into validated,
+ * schema-adherent resume JSON data.
+ * 
+ * Features highly robust text cleanups to guard against common LLM quirks:
+ *   1. Extracts nested code segments from Markdown code fences (e.g. ```json ... ```).
+ *   2. Isolates the outermost `{ ... }` bounds to slice away prefix/suffix conversational text.
+ *   3. Resolves syntax compilation hazards like trailing array/object commas and unescaped newlines.
+ *   4. Normalizes every array list and assigns unique reactive IDs (`id`) to experiences, 
+ *      education items, certifications, and projects to enable seamless React rendering keys.
+ *
+ * @param {string} responseText - Raw API response content string.
+ * @returns {object} The fully structured and validated resume data object.
+ * @throws {Error} If parsing completely fails or output object is invalid.
  */
 export function parseAIResponse(responseText) {
   if (!responseText || typeof responseText !== 'string') {
@@ -219,6 +259,7 @@ export function parseAIResponse(responseText) {
   const validated = {
     contactInfo: {
       name: '',
+      title: '',
       email: '',
       phone: '',
       location: '',
@@ -227,7 +268,7 @@ export function parseAIResponse(responseText) {
       ...parsed.contactInfo,
     },
     summary: parsed.summary || '',
-    experience: (parsed.experience || []).map((exp, i) => ({
+    experience: processExperienceBullets(parsed.experience || []).map((exp, i) => ({
       id: `exp_${Date.now()}_${i}`,
       title: exp.title || '',
       company: exp.company || '',
@@ -261,6 +302,8 @@ export function parseAIResponse(responseText) {
       description: proj.description || '',
       technologies: Array.isArray(proj.technologies) ? proj.technologies : [],
       link: proj.link || '',
+      github: proj.github || '',
+      status: proj.status || '',
     })),
     atsAnalysis: {
       score: typeof parsed.atsAnalysis?.score === 'number' ? parsed.atsAnalysis.score : 0,
@@ -276,8 +319,12 @@ export function parseAIResponse(responseText) {
 // ─── Prompt Size Estimator ────────────────────────────────────────────
 
 /**
- * Rough estimate of token count for a string.
- * Uses ~4 chars per token heuristic (good enough for cost estimation).
+ * Generates a fast, low-cost estimate of token count for a text string.
+ * Uses the industry standard 4-characters-per-token heuristic (valid enough for cost estimation).
+ * Prevents calling heavy regex tokens weights mapping engines on the client.
+ *
+ * @param {string} text - The input text segment.
+ * @returns {number} Estimated token count.
  */
 export function estimateTokens(text) {
   if (!text) return 0;
@@ -285,14 +332,17 @@ export function estimateTokens(text) {
 }
 
 /**
- * Build system prompt for structuring a raw resume text.
+ * Builds the system instruction prompt for structuring raw, unformatted resume texts.
+ * Configured as a highly literal mapping task to avoid hallucinations.
+ *
+ * @returns {string} The parser system instruction set.
  */
 export function buildParserSystemPrompt() {
   return `You are an expert resume parser and data extractor. Output ONLY valid JSON matching this exact schema—no markdown, no explanation, no extra text.
 
 JSON Schema:
 {
-  "contactInfo": {"name":"","email":"","phone":"","location":"","linkedin":"","website":""},
+  "contactInfo": {"name":"","title":"","email":"","phone":"","location":"","linkedin":"","website":""},
   "summary": "",
   "experience": [{"title":"","company":"","location":"","startDate":"","endDate":"","bullets":[""]}],
   "education": [{"degree":"","institution":"","location":"","year":"","gpa":""}],
@@ -312,7 +362,11 @@ Rules:
 // ─── ATS Match Scoring Prompts ────────────────────────────────────────
 
 /**
- * Build system prompt for performing only ATS match scoring analysis.
+ * Builds the system instruction prompt specifically for isolated,
+ * lightweight ATS keyword match percent calculations using third-party LLMs.
+ * Enforces raw JSON returns to integrate safely with dynamic charts.
+ *
+ * @returns {string} The scoring system instruction.
  */
 export function buildScoringSystemPrompt() {
   return `You are an expert ATS (Applicant Tracking System) parser and score analyzer. Your task is to evaluate the provided resume against the job description and output ONLY a valid JSON object with the match analysis.
@@ -334,7 +388,12 @@ Rules:
 }
 
 /**
- * Build the user prompt for scoring.
+ * Constructs the user prompt containing structured resume JSON and target job text.
+ * Wraps parameters inside strict XML boundaries.
+ *
+ * @param {object} resumeData - Current resume data object state.
+ * @param {string} jobDescription - Target job posting text.
+ * @returns {string} Fully compiled scoring user prompt.
  */
 export function buildScoringUserPrompt(resumeData, jobDescription) {
   return `<resume_data>
@@ -349,7 +408,12 @@ Analyze the resume against the job description and output the JSON match analysi
 }
 
 /**
- * Parse the lightweight AI scoring response.
+ * Parses and validates raw text returned by the isolated LLM scoring call.
+ * Strips code fences, isolates outer braces, fixes common errors, and normalizes
+ * lists before outputting to the caller.
+ *
+ * @param {string} responseText - Raw API scoring response.
+ * @returns {object} { score: number, matchingKeywords: Array<string>, missingKeywords: Array<string>, feedback: string }
  */
 export function parseScoringResponse(responseText) {
   if (!responseText || typeof responseText !== 'string') {

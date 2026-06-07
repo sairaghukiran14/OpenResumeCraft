@@ -22,6 +22,21 @@ import {
   RefreshCw
 } from 'lucide-react';
 
+/**
+ * Sidebar Component.
+ * ------------------
+ * The interactive master control dashboard for OpenResumeCraft's AI operations.
+ *
+ * Core Workflows & Sections:
+ *   1. AI Engine Configs: Houses input fields for API keys (with secret reveal/conceal options), 
+ *      writing tone selections, compact spacing triggers, and model bindings.
+ *   2. Local Ollama Manager: Connects dynamically to host networks to query and pull local models.
+ *   3. Action Triggers: Dispatches scoring requests (`Check Score`) and tailoring pipelines (`Tailor Resume`).
+ *   4. Integrated Widgets: Embeds real-time ATS match analytics and live token dashboards.
+ *   5. Session Audit Trails: Records and renders active history tokens and USD expenditures.
+ *
+ * @returns {React.ReactElement} The rendered Sidebar panel.
+ */
 export default function Sidebar() {
   const { state, dispatch } = useApp();
   const { settings, jobDescription, isGenerating, generationHistory } = state;
@@ -35,6 +50,14 @@ export default function Sidebar() {
   const [isLoadingLocalModels, setIsLoadingLocalModels] = useState(false);
   const [ollamaOffline, setOllamaOffline] = useState(false);
 
+  /**
+   * Dynamic local connection hook.
+   * Connects dynamically to host networks at http://localhost:11434/api/tags via
+   * the server proxy to query and pull local model lists. Safely recovers from timeouts
+   * or connection errors without crashing the main application thread.
+   *
+   * @returns {Promise<void>}
+   */
   const fetchLocalModels = async () => {
     setIsLoadingLocalModels(true);
     setOllamaOffline(false);
@@ -122,6 +145,14 @@ export default function Sidebar() {
     });
   };
 
+  /**
+   * Triggers local ATS Match Scoring.
+   * Computes the keyword match ratio and section completeness weights deterministically
+   * in real-time, displaying a spinner briefly to provide high-quality visual feedback.
+   * Hydrates the global state with the scoring result upon completion.
+   *
+   * @returns {Promise<void>}
+   */
   const triggerATSScoring = async () => {
     const apiKey = settings.apiKeys[settings.provider];
     
@@ -142,7 +173,7 @@ export default function Sidebar() {
     await new Promise(resolve => setTimeout(resolve, 600));
 
     try {
-      const parsedAnalysis = calculateATSScore(state.resumeData, jobDescription);
+      const parsedAnalysis = calculateATSScore(state.resumeData, jobDescription, state.selectedTemplate);
 
       // Save scoring analysis directly into global state
       dispatch({
@@ -170,6 +201,14 @@ export default function Sidebar() {
     }
   };
 
+  /**
+   * Triggers global resume tailoring through our Express backend endpoints.
+   * Constructs token-efficient XML prompt templates, handles state loaders,
+   * performs HTTP POST requests to `/api/generate`, parses responses back into structured JSON,
+   * and saves the results in global state.
+   *
+   * @returns {Promise<void>}
+   */
   const triggerAIGeneration = async () => {
     const apiKey = settings.apiKeys[settings.provider];
     
@@ -226,7 +265,7 @@ export default function Sidebar() {
 
       // Recompute the ATS Match Score deterministically using our standard local engine
       // to ensure 100% consistency across all actions!
-      const finalAtsAnalysis = calculateATSScore(tailoredResume, jobDescription);
+      const finalAtsAnalysis = calculateATSScore(tailoredResume, jobDescription, state.selectedTemplate);
       tailoredResume.atsAnalysis = finalAtsAnalysis;
 
       // Save tailored resume into state
@@ -248,11 +287,16 @@ export default function Sidebar() {
       // Select Preview panel automatically
       dispatch({ type: 'SET_ACTIVE_PANEL', payload: 'preview' });
 
-      // Show beautiful Sonner toast notification
+      // Show beautiful Sonner toast notifications
       const timeSec = ((result.durationMs || 0) / 1000).toFixed(2);
       toast.success('Resume Customization Successful!', {
         description: `Tailored to Job Description using ${result.model} in ${timeSec}s. Cost: $${(result.cost || 0).toFixed(4)}`,
         duration: 5000,
+      });
+
+      toast.success('ATS Score Analysis Complete!', {
+        description: `Your tailored resume match score is ${finalAtsAnalysis.score}%. View details in the Match Analytics widget.`,
+        duration: 6000,
       });
 
     } catch (err) {

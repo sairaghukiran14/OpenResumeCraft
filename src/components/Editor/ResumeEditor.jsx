@@ -14,8 +14,73 @@ import {
   ChevronUp, 
   ChevronDown,
   X,
-  PlusCircle
+  PlusCircle,
+  AlertCircle
 } from 'lucide-react';
+
+/**
+ * ResumeEditor Component.
+ * -----------------------
+ * The core primary data input form panel.
+ * 
+ * Functionality:
+ *   1. Section Forms: Renders expandable, styled field forms for Contact Details, 
+ *      Summaries, Experiences, Skills, Projects, and Certifications.
+ *   2. Nested State Mappings: Dispatches actions like `UPDATE_ENTRY`, `ADD_ENTRY`, 
+ *      and `REMOVE_ENTRY` to update the global App reducer.
+ *   3. Custom Inputs Creators: Dynamically updates tags lists for technical skills, soft skills,
+ *      and dev tools.
+ *
+ * @returns {React.ReactElement} The rendered form panel.
+ */
+function getQuantificationSuggestions(bulletText) {
+  const text = (bulletText || '').toLowerCase();
+  
+  const perfSuggestions = [
+    "Optimized React bundle sizes, reducing page load times by 35% and increasing Lighthouse scores to 96+.",
+    "Refactored state management to reduce unnecessary re-renders, increasing page responsiveness by 40%.",
+    "Implemented lazy loading and image optimization, cutting total asset payload by 1.2MB."
+  ];
+
+  const uiSuggestions = [
+    "Developed 20+ reusable UI components, speeding up feature delivery time across 3 teams by 25%.",
+    "Redesigned the onboarding user flow, resulting in a 15% increase in user sign-up conversion rate.",
+    "Built responsive layouts supporting 5+ screen sizes, increasing mobile session length by 18%."
+  ];
+
+  const apiSuggestions = [
+    "Integrated 8+ complex REST/GraphQL APIs, reducing network latency by 30% using custom query caching.",
+    "Migrated legacy data-fetching logic to React Query, reducing API call overhead by 45%.",
+    "Designed real-time dashboard components using WebSockets, supporting 5k+ concurrent active connections."
+  ];
+
+  const testSuggestions = [
+    "Wrote 80+ Jest/React Testing Library unit and integration tests, boosting test coverage from 55% to 88%.",
+    "Setup CI/CD automated testing pipelines, reducing deployment rollback rates by 60%.",
+    "Identified and fixed 40+ critical runtime memory leaks, improving browser memory stability by 30%."
+  ];
+
+  const defaultSuggestions = [
+    "Led development of 3 new product features, contributing to a 22% increase in monthly active users.",
+    "Collaborated with cross-functional teams to deliver project phases 2 weeks ahead of estimated deadlines.",
+    "Refactored legacy codebase, removing 5k+ lines of dead code and improving developer onboarding time by 30%."
+  ];
+
+  if (text.includes('perf') || text.includes('load') || text.includes('speed') || text.includes('optim') || text.includes('lcp')) {
+    return perfSuggestions;
+  }
+  if (text.includes('component') || text.includes('ui') || text.includes('page') || text.includes('view') || text.includes('react') || text.includes('design') || text.includes('style')) {
+    return uiSuggestions;
+  }
+  if (text.includes('api') || text.includes('fetch') || text.includes('backend') || text.includes('service') || text.includes('endpoint') || text.includes('graphql') || text.includes('query')) {
+    return apiSuggestions;
+  }
+  if (text.includes('test') || text.includes('jest') || text.includes('coverage') || text.includes('bug') || text.includes('spec')) {
+    return testSuggestions;
+  }
+  
+  return defaultSuggestions;
+}
 
 export default function ResumeEditor() {
   const { state, dispatch } = useApp();
@@ -317,6 +382,19 @@ export default function ResumeEditor() {
                 />
               </div>
               <div className="input-group">
+                <label className="input-label">Professional Title / Target Role</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Senior Software Engineer"
+                  value={resumeData.contactInfo.title || ''}
+                  onChange={(e) => handleContactChange('title', e.target.value)}
+                  className="input-field"
+                />
+              </div>
+            </div>
+
+            <div className="editor-row">
+              <div className="input-group">
                 <label className="input-label">Email Address</label>
                 <input
                   type="email"
@@ -326,9 +404,6 @@ export default function ResumeEditor() {
                   className="input-field"
                 />
               </div>
-            </div>
-
-            <div className="editor-row">
               <div className="input-group">
                 <label className="input-label">Phone Number</label>
                 <input
@@ -339,6 +414,9 @@ export default function ResumeEditor() {
                   className="input-field"
                 />
               </div>
+            </div>
+
+            <div className="editor-row">
               <div className="input-group">
                 <label className="input-label">Location (City, State)</label>
                 <input
@@ -349,9 +427,6 @@ export default function ResumeEditor() {
                   className="input-field"
                 />
               </div>
-            </div>
-
-            <div className="editor-row">
               <div className="input-group">
                 <label className="input-label">LinkedIn URL</label>
                 <input
@@ -362,6 +437,9 @@ export default function ResumeEditor() {
                   className="input-field"
                 />
               </div>
+            </div>
+
+            <div className="editor-row">
               <div className="input-group">
                 <label className="input-label">Personal Website / GitHub</label>
                 <input
@@ -494,26 +572,58 @@ export default function ResumeEditor() {
                   </label>
                   
                   <div className="bullet-list">
-                    {(exp.bullets || []).map((bullet, bIdx) => (
-                      <div className="bullet-item animate-fadeIn" key={bIdx}>
-                        <span style={{ color: 'var(--color-accent-violet)', marginTop: '8px' }}>•</span>
-                        <input
-                          type="text"
-                          placeholder="e.g. Redesigned API endpoints improving transaction response times by 30%"
-                          value={bullet || ''}
-                          onChange={(e) => updateExperienceBullet(exp.id, bIdx, e.target.value)}
-                          className="input-field"
-                        />
-                        <button 
-                          onClick={() => removeExperienceBullet(exp.id, bIdx)} 
-                          className="btn-ghost" 
-                          style={{ padding: '8px', color: 'var(--color-text-tertiary)' }}
-                          title="Remove Bullet"
-                        >
-                          <X size={14} />
-                        </button>
-                      </div>
-                    ))}
+                    {(exp.bullets || []).map((bullet, bIdx) => {
+                      const needsQuantification = bullet && bullet.trim() !== '' && !/\d|%/.test(bullet);
+                      return (
+                        <div className="bullet-item animate-fadeIn" key={bIdx}>
+                          <span style={{ color: 'var(--color-accent-violet)', marginTop: '8px' }}>•</span>
+                          <input
+                            type="text"
+                            placeholder="e.g. Redesigned API endpoints improving transaction response times by 30%"
+                            value={bullet || ''}
+                            onChange={(e) => updateExperienceBullet(exp.id, bIdx, e.target.value)}
+                            className="input-field"
+                          />
+                          {needsQuantification && (() => {
+                            const suggestions = getQuantificationSuggestions(bullet);
+                            return (
+                              <div className="bullet-warning-container">
+                                <AlertCircle className="bullet-warning-icon" size={16} />
+                                <div className="bullet-warning-tooltip">
+                                  <div style={{ fontWeight: '700', marginBottom: '4px' }}>Quantification Suggestion:</div>
+                                  <div style={{ fontSize: '10.5px', color: 'var(--color-text-muted)', marginBottom: '8px', lineHeight: '1.35' }}>
+                                    Adding metrics increases ATS matching. Click a suggestion below to apply it:
+                                  </div>
+                                  <div className="bullet-suggestions-list">
+                                    {suggestions.map((s, idx) => (
+                                      <button 
+                                        key={idx} 
+                                        type="button"
+                                        className="bullet-suggestion-btn"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          updateExperienceBullet(exp.id, bIdx, s);
+                                        }}
+                                      >
+                                        "{s}"
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })()}
+                          <button 
+                            onClick={() => removeExperienceBullet(exp.id, bIdx)} 
+                            className="btn-ghost" 
+                            style={{ padding: '8px', color: 'var(--color-text-tertiary)' }}
+                            title="Remove Bullet"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
 
                   <button
@@ -726,15 +836,76 @@ export default function ResumeEditor() {
                   />
                 </div>
 
-                <div className="input-group">
-                  <label className="input-label">Description / Core Highlights</label>
-                  <textarea
-                    placeholder="Describe the project achievements, what problem you solved, and metrics..."
-                    value={proj.description || ''}
-                    onChange={(e) => updateProject(proj.id, 'description', e.target.value)}
-                    className="textarea-field"
-                    style={{ minHeight: '80px' }}
-                  />
+                <div style={{ marginTop: 'var(--space-3)' }}>
+                  <label className="input-label" style={{ display: 'block', marginBottom: 'var(--space-2)' }}>
+                    Description Bullet Points
+                  </label>
+                  
+                  <div className="bullet-list">
+                    {(() => {
+                      const bullets = (proj.description || '')
+                        .split('\n')
+                        .map(b => b.replace(/^\s*[•\-*]\s*/, ''));
+                      if (bullets.length === 0 || (bullets.length === 1 && bullets[0] === '')) {
+                        return (
+                          <div className="bullet-item animate-fadeIn">
+                            <span style={{ color: 'var(--color-accent-violet)', marginTop: '8px' }}>•</span>
+                            <input
+                              type="text"
+                              placeholder="e.g. Developed the application using React and local storage"
+                              value=""
+                              onChange={(e) => {
+                                updateProject(proj.id, 'description', `• ${e.target.value}`);
+                              }}
+                              className="input-field"
+                            />
+                          </div>
+                        );
+                      }
+                      return bullets.map((bullet, bIdx) => (
+                        <div className="bullet-item animate-fadeIn" key={bIdx}>
+                          <span style={{ color: 'var(--color-accent-violet)', marginTop: '8px' }}>•</span>
+                          <input
+                            type="text"
+                            placeholder="e.g. Developed the application using React and local storage"
+                            value={bullet || ''}
+                            onChange={(e) => {
+                              const newBullets = [...bullets];
+                              newBullets[bIdx] = e.target.value;
+                              updateProject(proj.id, 'description', newBullets.map(b => `• ${b}`).join('\n'));
+                            }}
+                            className="input-field"
+                          />
+                          <button 
+                            onClick={() => {
+                              const newBullets = bullets.filter((_, idx) => idx !== bIdx);
+                              updateProject(proj.id, 'description', newBullets.map(b => `• ${b}`).join('\n'));
+                            }} 
+                            className="btn-ghost" 
+                            style={{ padding: '8px', color: 'var(--color-text-tertiary)' }}
+                            title="Remove Bullet"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      const bullets = (proj.description || '')
+                        .split('\n')
+                        .map(b => b.replace(/^\s*[•\-*]\s*/, ''));
+                      const newBullets = [...bullets, ''];
+                      updateProject(proj.id, 'description', newBullets.map(b => `• ${b}`).join('\n'));
+                    }}
+                    className="btn btn-secondary btn-sm"
+                    style={{ marginTop: 'var(--space-2)', gap: 'var(--space-1)' }}
+                  >
+                    <PlusCircle size={12} />
+                    <span>Add Project Bullet</span>
+                  </button>
                 </div>
               </div>
             ))}

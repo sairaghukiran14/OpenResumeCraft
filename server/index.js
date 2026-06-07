@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { createRequire } from 'module';
 import mammoth from 'mammoth';
+import { createClient } from 'redis';
 import { PROVIDERS, calculateCost } from '../src/services/aiProviders.js';
 import { buildSystemPrompt, buildUserPrompt, parseAIResponse, buildParserSystemPrompt } from '../src/services/promptEngine.js';
 
@@ -12,17 +13,81 @@ const pdfParse = require('pdf-parse');
 
 dotenv.config();
 
+// Connect to Redis if available, with a silent fallback to memory cache
+let redisClient = null;
+let isRedisConnected = false;
+
+(async () => {
+  try {
+    const redisUrl = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
+    redisClient = createClient({ 
+      url: redisUrl,
+      socket: {
+        connectTimeout: 2000,
+        reconnectStrategy: (retries) => {
+          if (retries > 3) {
+            // Stop retrying to avoid spamming logs when Redis is absent
+            return new Error('Redis connection failed permanently');
+          }
+          return 1000;
+        }
+      }
+    });
+    
+    redisClient.on('error', (err) => {
+      if (isRedisConnected) {
+        console.warn('[Redis Error] Connection lost:', err.message);
+        isRedisConnected = false;
+      }
+    });
+
+    redisClient.on('ready', () => {
+      isRedisConnected = true;
+      console.log('🔌 [Redis] Connected successfully');
+    });
+
+    await redisClient.connect();
+  } catch (err) {
+    console.warn('[Redis] Failed to initialize client or connect, falling back to memory cache:', err.message);
+    redisClient = null;
+    isRedisConnected = false;
+  }
+})();
+
+/**
+ * Express application instance.
+ * Houses the core REST API routes and configurations for OpenResumeCraft.
+ */
 const app = express();
+
+/**
+ * Server listening port.
+ * Defaults to port 5001 if the PORT environment variable is not defined.
+ */
 const PORT = process.env.PORT || 5001;
 
-// Middlewares
+// Middlewares setup
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
-// Simple in-memory cache for fast, token-efficient, cached resume optimization
+/**
+ * Simple in-memory response cache.
+ * Key: Dynamic hash generated from (providerId + modelId + systemPrompt + userPrompt).
+ * Value: Structured result object containing generated content, token metrics, cost, and timestamps.
+ * 
+ * Used to implement fast, token-efficient, and cached resume optimization.
+ * Prevents redundant third-party API calls when users click "Tailor Resume" multiple times 
+ * without changing the input parameters.
+ * 
+ * @type {Map<string, object>}
+ */
 const responseCache = new Map();
 
-// Helper to clean cache periodically
+/**
+ * Periodic cache eviction task.
+ * Runs every 30 minutes to clean up memory usage. If the cache exceeds 100 elements,
+ * clears all cached outputs to ensure the Node.js server preserves a low RAM footprint.
+ */
 setInterval(() => {
   if (responseCache.size > 100) {
     responseCache.clear();
@@ -30,17 +95,47 @@ setInterval(() => {
   }
 }, 30 * 60 * 1000); // 30 minutes
 
-// Test endpoint
+/**
+ * GET /api/health
+ * ---------------
+ * Lightweight endpoint to check the running state of the backend server.
+ * Used for deployment health probes and initial application startup sanity checks.
+ *
+ * @param {express.Request} req - Express request object.
+ * @param {express.Response} res - Express response object.
+ * @returns {void}
+ */
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'OpenResumeCraft backend is running successfully' });
 });
 
-// AI endpoints list
+/**
+ * GET /api/providers
+ * ------------------
+ * Returns the registry of all configured third-party AI providers (OpenAI, Gemini, Anthropic, etc.)
+ * along with their model list metadata, HSL branding colors, and pricing parameters.
+ *
+ * @param {express.Request} req - Express request object.
+ * @param {express.Response} res - Express response object.
+ * @returns {void}
+ */
 app.get('/api/providers', (req, res) => {
   res.json(PROVIDERS);
 });
 
-// Dynamic Ollama local models list
+/**
+ * GET /api/ollama-models
+ * ----------------------
+ * Attempts to dynamically fetch the lists of installed local models from the Ollama service
+ * if running on the user's host machine (http://localhost:11434).
+ * 
+ * Includes a 2-second fast connection timeout to prevent hanging the React UI when
+ * Ollama is offline or not installed, gracefully falling back to a 503 service status.
+ *
+ * @param {express.Request} req - Express request object.
+ * @param {express.Response} res - Express response object.
+ * @returns {Promise<void>}
+ */
 app.get('/api/ollama-models', async (req, res) => {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 2000); // 2s timeout is plenty for a local server connection
@@ -54,6 +149,7 @@ app.get('/api/ollama-models', async (req, res) => {
     }
     
     const data = await response.json();
+    // Format Ollama local model specifications to match standard provider models schema
     const formattedModels = (data.models || []).map(m => {
       const paramSize = m.details?.parameter_size ? ` (${m.details.parameter_size})` : '';
       const quant = m.details?.quantization_level ? ` [${m.details.quantization_level}]` : '';
@@ -75,11 +171,32 @@ app.get('/api/ollama-models', async (req, res) => {
 });
 
 
-// Unified AI resume generation endpoint
+/**
+ * POST /api/generate
+ * ------------------
+ * Unified server-side endpoint to tailor resume JSON content against a target job description.
+ *
+ * Implements a lightweight reverse-proxy calling third-party LLMs (OpenAI, Gemini, Anthropic, etc.).
+ * Includes key features:
+ *   1. System-level fallback for API keys stored in environment variables (e.g., OPENAI_API_KEY).
+ *   2. In-memory caching logic based on hashed parameters to conserve token usage.
+ *   3. Provider-specific API payload converters.
+ *   4. Client disconnect tracking and abort thresholds (Ollama local timeout at 3 minutes, external APIs at 60 seconds).
+ *
+ * @param {express.Request} req - Express request object containing:
+ *   - providerId {string}: AI Provider ID ('openai', 'gemini', 'anthropic', etc.)
+ *   - modelId {string}: Specific model identifier (e.g., 'gpt-4o-mini')
+ *   - apiKey {string}: Client-provided API key (optional fallback to env variables)
+ *   - systemPrompt {string}: Custom system instruction set
+ *   - userPrompt {string}: Rendered XML layout of user resume + job description
+ *   - useCache {boolean}: Toggle to force refresh or use memory cache (default: true)
+ * @param {express.Response} res - Express response object returning structured tailored resume + token costs.
+ * @returns {Promise<void>}
+ */
 app.post('/api/generate', async (req, res) => {
   const { providerId, modelId, apiKey, systemPrompt, userPrompt, useCache = true } = req.body;
 
-  // Key fallback
+  // Fallback to server environment keys if client API keys are blank
   let activeKey = apiKey ? apiKey.trim() : '';
   if (!activeKey && providerId !== 'ollama') {
     const envKeyName = `${providerId.toUpperCase()}_API_KEY`;
@@ -90,11 +207,26 @@ app.post('/api/generate', async (req, res) => {
     return res.status(400).json({ error: `Missing required parameter: API Key is required for ${providerId}` });
   }
 
-  // Create a cache key from prompts + model + provider (excluding API key)
+  // Create a unique cache key to intercept redundant requests
   const cacheKey = `${providerId}:${modelId}:${systemPrompt}:${userPrompt}`;
 
+  // 1. Check Redis cache first if connected
+  if (useCache && isRedisConnected && redisClient) {
+    try {
+      const cachedVal = await redisClient.get(cacheKey);
+      if (cachedVal) {
+        console.log(`[Redis Cache] Hit for ${providerId}:${modelId}`);
+        const parsedCached = JSON.parse(cachedVal);
+        return res.json({ ...parsedCached, cached: true });
+      }
+    } catch (redisErr) {
+      console.warn('[Redis Cache Get Error] Fallback to memory cache:', redisErr.message);
+    }
+  }
+
+  // 2. Fallback to memory cache
   if (useCache && responseCache.has(cacheKey)) {
-    console.log(`[Server Cache] Hit for ${providerId}:${modelId}`);
+    console.log(`[Server Cache] Hit (Memory) for ${providerId}:${modelId}`);
     const cachedResponse = responseCache.get(cacheKey);
     return res.json({ ...cachedResponse, cached: true });
   }
@@ -269,6 +401,19 @@ app.post('/api/generate', async (req, res) => {
     // Store in cache
     if (useCache && content) {
       responseCache.set(cacheKey, result);
+
+      // Store in Redis if available
+      if (isRedisConnected && redisClient) {
+        try {
+          // TTL of 24 hours (86400 seconds)
+          await redisClient.set(cacheKey, JSON.stringify(result), {
+            EX: 86400
+          });
+          console.log(`[Redis Cache] Set successful for ${providerId}:${modelId}`);
+        } catch (redisErr) {
+          console.warn('[Redis Cache Set Error]:', redisErr.message);
+        }
+      }
     }
 
     res.json(result);
@@ -278,7 +423,25 @@ app.post('/api/generate', async (req, res) => {
   }
 });
 
-// Express endpoint to parse raw resume text into structured JSON using AI
+/**
+ * POST /api/parse-resume
+ * ----------------------
+ * Parses unformatted, raw resume text into structured JSON matching the OpenResumeCraft schema.
+ * Useful for bootstrapping new users from existing documents or LinkedIn copy-pastes.
+ * 
+ * Works similarly to /api/generate but enforces:
+ *   1. A parser-specific, high-fidelity system extraction instruction sheet.
+ *   2. Forced low temperature (0.2) to prevent creative hallucination of historical details.
+ *   3. Dynamic model selection & timeout strategies.
+ *
+ * @param {express.Request} req - Express request object containing:
+ *   - providerId {string}: AI Provider ID ('openai', 'gemini', 'anthropic', etc.)
+ *   - modelId {string}: Specific model identifier (e.g., 'gpt-4o-mini')
+ *   - apiKey {string}: API Key credential
+ *   - rawText {string}: Unstructured plain-text string extracted from PDF, Word, or text source
+ * @param {express.Response} res - Express response object returning structured schema-compatible JSON.
+ * @returns {Promise<void>}
+ */
 app.post('/api/parse-resume', async (req, res) => {
   const { providerId, modelId, apiKey, rawText } = req.body;
 
@@ -465,10 +628,30 @@ app.post('/api/parse-resume', async (req, res) => {
   }
 });
 
-// Register the raw body parser for the file extraction endpoint to safely read binary streams up to 10MB
+/**
+ * Raw binary body parser middleware.
+ * Maps binary buffer streams sent to /api/extract-text directly into `req.body`
+ * up to a 10MB payload size. Required since file extraction routes receive
+ * raw document binaries directly instead of standard JSON.
+ */
 app.use('/api/extract-text', express.raw({ type: '*/*', limit: '10mb' }));
 
-// Unified endpoint to extract text from PDF or DOCX binary uploads
+/**
+ * POST /api/extract-text
+ * ----------------------
+ * Parses a binary file stream uploaded from the front-end and extracts raw, unstructured text.
+ * Support matrix:
+ *   - 'application/pdf' or file name ending in `.pdf`: Processed using `pdf-parse` library.
+ *   - 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' or ending in `.docx`: Processed using `mammoth` library (extracts raw paragraphs, omitting complex visual styling).
+ *   - Any other format: Read as plain-text UTF-8 buffer.
+ *
+ * @param {express.Request} req - Express request object containing:
+ *   - headers['content-type'] {string}: The MIME type of the uploaded file
+ *   - headers['x-file-name'] {string}: The original file name with extension
+ *   - body {Buffer}: Raw file binary buffer
+ * @param {express.Response} res - Express response object returning the extracted plain-text string.
+ * @returns {Promise<void>}
+ */
 app.post('/api/extract-text', async (req, res) => {
   const contentType = req.headers['content-type'] || '';
   const fileName = req.headers['x-file-name'] || 'document';
