@@ -237,13 +237,25 @@ export default function CoverLetterPreview() {
                 }
 
                 if (isSignoff) {
+                  const commaIndex = text.indexOf(',');
+                  let valediction = text;
+                  let signatureName = name;
+
+                  if (commaIndex !== -1 && commaIndex < 20) {
+                    valediction = text.substring(0, commaIndex + 1).trim();
+                    const remainder = text.substring(commaIndex + 1).trim();
+                    if (remainder) {
+                      signatureName = remainder;
+                    }
+                  }
+
                   return (
                     <div key={index} style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '40px' }}>
                       <div>
-                        {text}
+                        {valediction}
                       </div>
                       <div style={{ fontWeight: '700', color: '#1e293b' }}>
-                        {name}
+                        {signatureName}
                       </div>
                     </div>
                   );
